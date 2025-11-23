@@ -201,7 +201,7 @@ export default async function PublicProfilePage({
                             </p>
                           )}
                           <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                            <time dateTime={post.createdAt}>
+                            <time dateTime={new Date(post.createdAt).toISOString()}>
                               {new Date(post.createdAt).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
