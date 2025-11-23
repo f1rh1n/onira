@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"/c/Users/Farhan khan/Downloads\" -maxdepth 1 -type f ( -name \"*Gemini*\" -o -name \"*y5eeg2*\" ))",
+      "Bash(python process_logo.py)",
+      "Bash(py --version)",
+      "Bash(py process_logo.py)",
+      "Bash(npm install framer-motion recharts react-icons)",
+      "Bash(timeout 3)",
+      "Bash(npx prisma db push --skip-generate)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(./cleanup-and-start.bat)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(npx prisma generate)",
+      "Bash(python -c:*)",
+      "Bash(npm install:*)",
+      "Bash(node optimize-logo.js:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

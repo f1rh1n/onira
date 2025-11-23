@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  username      String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  profile       Profile?
+}
+
+model Profile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName   String
+  bio           String?
+  profileType   String    @default("business") // business, personal, etc.
+  businessName  String?
+  location      String?
+  phone         String?
+  website       String?
+  instagram     String?
+  coverImage    String?
+  profileImage  String?
+  avatar        String?   // Avatar ID for profile picture
+  customContent String?   // JSON string for flexible content
+  isPublished   Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  reviews       Review[]
+  posts         Post[]
+}
+
+model Review {
+  id            String    @id @default(cuid())
+  profileId     String
+  profile       Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  reviewerName  String    // Anonymous name chosen by reviewer
+  reviewerAvatar String?  // Avatar ID chosen by reviewer
+  rating        Int       // 1-5 stars
+  comment       String
+  isPublished   Boolean   @default(false) // Only profile owner can publish
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Post {
+  id            String    @id @default(cuid())
+  profileId     String
+  profile       Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  title         String
+  content       String    // Blog post content
+  excerpt       String?   // Short description
+  coverImage    String?   // Cover image URL or base64
+  images        String?   // JSON array of additional images
+  category      String?   // Post category
+  tags          String?   // JSON array of tags
+  isPublished   Boolean   @default(true)
+  views         Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

@@ -1,0 +1,21 @@
+Files updated for dark theme:
+1. globals.css - Dark background and custom scrollbar
+2. app/page.tsx - Homepage with dark theme
+3. app/login/page.tsx - Login page dark
+4. app/register/page.tsx - Register page dark
+5. app/dashboard/page.tsx - Dashboard dark
+
+Need to update:
+- app/profile/setup/page.tsx
+- app/profile/edit/page.tsx
+- app/dashboard/reviews/page.tsx
+- app/[username]/page.tsx
+- components/ReviewForm.tsx
+
+Color scheme:
+- Background: #0a0a0a
+- Cards: #1a1a1a
+- Border: #333333 or gray-800
+- Text: white/gray-300/gray-400
+- Accent: purple-400/purple-500/purple-600
+- Inputs: bg-[#0a0a0a] border-gray-700
