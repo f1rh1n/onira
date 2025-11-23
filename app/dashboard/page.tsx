@@ -149,7 +149,10 @@ export default function DashboardPage() {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   Welcome back, {profile.displayName}!
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">Here's what's happening with your profile today</p>
+<p className="text-gray-600 dark:text-gray-400">
+  Here&apos;s what&apos;s happening with your profile today
+</p>
+
               </div>
               <Link
                 href={`/${(session?.user as any)?.username}`}
