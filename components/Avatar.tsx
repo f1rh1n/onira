@@ -42,6 +42,7 @@ export default function Avatar({ avatarId, size = 40, className = "" }: AvatarPr
       style={{ width: size, height: size }}
       onError={() => setImageError(true)}
       loading="lazy"
+      crossOrigin="anonymous"
     />
   );
 }

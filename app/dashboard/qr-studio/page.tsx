@@ -11,6 +11,7 @@ import html2canvas from "html2canvas";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Avatar from "@/components/Avatar";
 import { FiDownload, FiRefreshCw } from "react-icons/fi";
+import { predefinedAvatars, getAvatarUrl } from "@/lib/avatars";
 
 interface Profile {
   id: string;
@@ -36,6 +37,7 @@ export default function QRStudioPage() {
   const [includeAvatar, setIncludeAvatar] = useState(true);
   const [avatarInQR, setAvatarInQR] = useState(true);
   const [profileUrl, setProfileUrl] = useState("");
+  const [avatarDataUrl, setAvatarDataUrl] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -69,6 +71,40 @@ export default function QRStudioPage() {
       setLoading(false);
     }
   };
+
+  // Fetch and convert avatar to data URL for QR code
+  useEffect(() => {
+    const loadAvatarDataUrl = async () => {
+      if (!profile?.avatar) {
+        setAvatarDataUrl(undefined);
+        return;
+      }
+
+      const avatarData = predefinedAvatars.find(a => a.id === profile.avatar);
+      if (!avatarData) {
+        setAvatarDataUrl(undefined);
+        return;
+      }
+
+      try {
+        const avatarUrl = getAvatarUrl(avatarData.seed, avatarData.style);
+        const response = await fetch(avatarUrl);
+        const svgText = await response.text();
+        const blob = new Blob([svgText], { type: 'image/svg+xml' });
+        const dataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+        setAvatarDataUrl(dataUrl);
+      } catch (error) {
+        console.error("Error loading avatar for QR:", error);
+        setAvatarDataUrl(undefined);
+      }
+    };
+
+    loadAvatarDataUrl();
+  }, [profile?.avatar]);
 
   const downloadQRCard = async () => {
     if (!cardRef.current) return;
@@ -281,20 +317,8 @@ export default function QRStudioPage() {
                 />
               </div>
 
-              {/* Include Avatar Options */}
-              <div className="mb-6 space-y-3">
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={includeAvatar}
-                    onChange={(e) => setIncludeAvatar(e.target.checked)}
-                    className="rounded border-gray-300 dark:border-gray-700 text-purple-600 focus:ring-purple-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Include profile avatar on card
-                  </span>
-                </label>
-
+              {/* Avatar in QR Option */}
+              <div className="mb-6">
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -371,15 +395,6 @@ export default function QRStudioPage() {
                 >
                   {/* Card Header */}
                   <div className="text-center mb-6">
-                    {includeAvatar && profile.avatar && (
-                      <div className="flex justify-center mb-4">
-                        <Avatar
-                          avatarId={profile.avatar}
-                          size={80}
-                          className="rounded-full border-4 border-current opacity-90"
-                        />
-                      </div>
-                    )}
                     <h3 className="text-2xl font-bold mb-1">
                       {profile.displayName}
                     </h3>
@@ -392,26 +407,51 @@ export default function QRStudioPage() {
 
                   {/* QR Code */}
                   <div className="flex justify-center mb-6">
-                    <div className="bg-white p-4 rounded-xl shadow-lg relative">
-                      <QRCodeSVG
-                        value={profileUrl}
-                        size={size}
-                        fgColor={fgColor}
-                        bgColor={bgColor}
-                        level="H"
-                        imageSettings={
-                          avatarInQR && profile?.avatar
-                            ? {
-                                src: `https://api.dicebear.com/7.x/${profile.avatar}/svg?seed=${profile.id}`,
-                                x: undefined,
-                                y: undefined,
-                                height: size * 0.2,
-                                width: size * 0.2,
-                                excavate: true,
-                              }
-                            : undefined
-                        }
-                      />
+                    <div className="bg-white p-4 rounded-xl shadow-lg relative overflow-hidden">
+                      {/* Fun Avatar Background Pattern */}
+                      <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath d='M0 30L15 0l15 30l-15 30zM15 0l15 30h-30zM30 30l15-30l15 30l-15 30zM45 0l15 30h-30z'/%3E%3C/g%3E%3C/svg%3E")`,
+                        backgroundSize: '40px 40px'
+                      }} />
+
+                      {/* Small Random Avatars as Background */}
+                      <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 gap-1 p-2 opacity-[0.08] pointer-events-none">
+                        {Array.from({ length: 24 }).map((_, i) => {
+                          const randomAvatar = predefinedAvatars[i % predefinedAvatars.length];
+                          return (
+                            <div key={i} className="w-full h-full flex items-center justify-center">
+                              <img
+                                src={getAvatarUrl(randomAvatar.seed, randomAvatar.style)}
+                                alt=""
+                                className="w-full h-full object-cover rounded-full"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* QR Code */}
+                      <div className="relative z-10">
+                        <QRCodeSVG
+                          value={profileUrl}
+                          size={size}
+                          fgColor={fgColor}
+                          bgColor={bgColor}
+                          level="H"
+                          imageSettings={
+                            avatarInQR && avatarDataUrl
+                              ? {
+                                  src: avatarDataUrl,
+                                  x: undefined,
+                                  y: undefined,
+                                  height: size * 0.2,
+                                  width: size * 0.2,
+                                  excavate: true,
+                                }
+                              : undefined
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
 
