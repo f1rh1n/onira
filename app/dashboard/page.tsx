@@ -254,9 +254,11 @@ export default function DashboardPage() {
 
                   <button
                     onClick={() => {
-                      const url = `${window.location.origin}/${(session?.user as any)?.username}`;
-                      navigator.clipboard.writeText(url);
-                      alert("Profile link copied!");
+                      if (typeof window !== 'undefined') {
+                        const url = `${window.location.origin}/${(session?.user as any)?.username}`;
+                        navigator.clipboard.writeText(url);
+                        alert("Profile link copied!");
+                      }
                     }}
                     className="w-full p-4 bg-white dark:bg-[#0a0a0a] border border-gray-200 dark:border-gray-800 rounded-lg hover:border-purple-500/50 transition group text-left"
                   >

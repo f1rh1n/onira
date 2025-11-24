@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 
 interface PostLikeButtonProps {
@@ -12,19 +12,11 @@ export default function PostLikeButton({ postId }: PostLikeButtonProps) {
   const [likeCount, setLikeCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [anonymousId, setAnonymousId] = useState<string>("");
+  const [mounted, setMounted] = useState(false);
 
-  // Get or create anonymous ID
-  useEffect(() => {
-    let id = localStorage.getItem("anonymousId");
-    if (!id) {
-      id = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem("anonymousId", id);
-    }
-    setAnonymousId(id);
-    fetchLikeStatus(id);
-  }, [postId]);
-
-  const fetchLikeStatus = async (id: string) => {
+  // Fetch like status - wrapped in useCallback
+  const fetchLikeStatus = useCallback(async (id: string) => {
+    if (!id) return;
     try {
       const res = await fetch(`/api/posts/${postId}/like?anonymousId=${id}`);
       if (res.ok) {
@@ -35,7 +27,23 @@ export default function PostLikeButton({ postId }: PostLikeButtonProps) {
     } catch (error) {
       console.error("Error fetching like status:", error);
     }
-  };
+  }, [postId]);
+
+  // Get or create anonymous ID - SSR safe
+  useEffect(() => {
+    setMounted(true);
+
+    // Only access localStorage in browser
+    if (typeof window === 'undefined') return;
+
+    let id = localStorage.getItem("anonymousId");
+    if (!id) {
+      id = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem("anonymousId", id);
+    }
+    setAnonymousId(id);
+    fetchLikeStatus(id);
+  }, [postId, fetchLikeStatus]);
 
   const handleLike = async () => {
     if (loading || !anonymousId) return;
@@ -78,7 +86,7 @@ export default function PostLikeButton({ postId }: PostLikeButtonProps) {
     <motion.button
       onClick={handleLike}
       disabled={loading}
-      className="flex items-center gap-1.5 hover:text-purple-500 transition group"
+      className="flex items-center gap-1.5 hover:text-purple-500 transition group min-h-[44px] min-w-[44px] -m-2 p-2"
       whileTap={{ scale: 0.9 }}
     >
       <motion.span

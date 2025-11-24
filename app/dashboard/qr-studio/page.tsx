@@ -35,6 +35,7 @@ export default function QRStudioPage() {
   const [template, setTemplate] = useState<CardTemplate>("business");
   const [includeAvatar, setIncludeAvatar] = useState(true);
   const [avatarInQR, setAvatarInQR] = useState(true);
+  const [profileUrl, setProfileUrl] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -47,6 +48,13 @@ export default function QRStudioPage() {
       fetchProfile();
     }
   }, [status]);
+
+  // Set profile URL - SSR safe
+  useEffect(() => {
+    if (typeof window !== 'undefined' && session?.user) {
+      setProfileUrl(`${window.location.origin}/${(session.user as any).username}`);
+    }
+  }, [session]);
 
   const fetchProfile = async () => {
     try {
@@ -61,10 +69,6 @@ export default function QRStudioPage() {
       setLoading(false);
     }
   };
-
-  const profileUrl = session?.user
-    ? `${window.location.origin}/${(session.user as any).username}`
-    : "";
 
   const downloadQRCard = async () => {
     if (!cardRef.current) return;

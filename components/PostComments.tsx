@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { predefinedAvatars, getAvatarUrl } from "@/lib/avatars";
 import Avatar from "./Avatar";
@@ -26,6 +26,7 @@ export default function PostComments({ postId, profileUserId }: PostCommentsProp
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [anonymousId, setAnonymousId] = useState<string>("");
+  const [mounted, setMounted] = useState(false);
 
   const [formData, setFormData] = useState({
     commenterName: "",
@@ -33,17 +34,8 @@ export default function PostComments({ postId, profileUserId }: PostCommentsProp
     comment: "",
   });
 
-  useEffect(() => {
-    let id = localStorage.getItem("anonymousId");
-    if (!id) {
-      id = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem("anonymousId", id);
-    }
-    setAnonymousId(id);
-    fetchComments();
-  }, [postId]);
-
-  const fetchComments = async () => {
+  // Fetch comments - wrapped in useCallback
+  const fetchComments = useCallback(async () => {
     try {
       const res = await fetch(`/api/posts/${postId}/comments`);
       if (res.ok) {
@@ -53,7 +45,23 @@ export default function PostComments({ postId, profileUserId }: PostCommentsProp
     } catch (error) {
       console.error("Error fetching comments:", error);
     }
-  };
+  }, [postId]);
+
+  // Get or create anonymous ID - SSR safe
+  useEffect(() => {
+    setMounted(true);
+
+    // Only access localStorage in browser
+    if (typeof window === 'undefined') return;
+
+    let id = localStorage.getItem("anonymousId");
+    if (!id) {
+      id = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem("anonymousId", id);
+    }
+    setAnonymousId(id);
+    fetchComments();
+  }, [postId, fetchComments]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +118,7 @@ export default function PostComments({ postId, profileUserId }: PostCommentsProp
       {/* Comment Button */}
       <button
         onClick={() => setShowForm(!showForm)}
-        className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition text-sm"
+        className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition text-sm min-h-[44px] min-w-[44px] -m-2 p-2"
       >
         <span className="text-xl">💬</span>
         <span>{comments.length > 0 ? comments.length : ""}</span>
@@ -131,7 +139,7 @@ export default function PostComments({ postId, profileUserId }: PostCommentsProp
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Choose Avatar
                 </label>
-                <div className="grid grid-cols-8 gap-2">
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
                   {predefinedAvatars.slice(0, 8).map((avatar) => (
                     <motion.button
                       key={avatar.id}
@@ -181,18 +189,18 @@ export default function PostComments({ postId, profileUserId }: PostCommentsProp
               <p className="text-xs text-gray-500">{formData.comment.length}/500</p>
 
               {/* Submit Buttons */}
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 disabled:opacity-50 transition text-sm"
+                  className="flex-1 bg-purple-600 text-white px-4 py-3 sm:py-2 rounded-lg hover:bg-purple-500 disabled:opacity-50 transition text-sm font-medium min-h-[44px]"
                 >
                   {loading ? "Posting..." : "Post Comment"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-sm"
+                  className="px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-sm font-medium min-h-[44px]"
                 >
                   Cancel
                 </button>

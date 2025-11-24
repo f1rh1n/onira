@@ -82,7 +82,7 @@ export default async function PublicProfilePage({
       {/* Header */}
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800">
         <nav className="container mx-auto px-4 py-3">
-          <a href="/" className="transition-transform hover:scale-105 inline-block text-3xl font-bold tracking-wider">
+          <a href="/" className="transition-transform hover:scale-105 inline-block text-2xl sm:text-3xl font-bold tracking-wider">
             <span className="text-purple-600">O</span>
             <span className="text-purple-600">N</span>
             <span className="text-blue-500">I</span>
@@ -96,8 +96,8 @@ export default async function PublicProfilePage({
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Profile Header - Instagram Style */}
-          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8 mb-8">
-            <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
+            <div className="flex flex-col md:flex-row gap-4 sm:gap-6 md:gap-8 items-center md:items-start">
               {/* Profile Avatar - Centered on Mobile */}
               {profile.avatar && (
                 <div className="relative group">
@@ -105,8 +105,8 @@ export default async function PublicProfilePage({
                   <div className="relative">
                     <Avatar
                       avatarId={profile.avatar}
-                      size={150}
-                      className="rounded-full border-4 border-white dark:border-gray-800"
+                      size={120}
+                      className="rounded-full border-4 border-white dark:border-gray-800 sm:w-[150px] sm:h-[150px]"
                     />
                   </div>
                 </div>
@@ -114,17 +114,17 @@ export default async function PublicProfilePage({
 
               {/* Profile Info */}
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
                   {profile.displayName}
                 </h1>
                 {profile.businessName && (
-                  <p className="text-lg text-gray-600 dark:text-gray-300 font-medium mb-3">
+                  <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 font-medium mb-3">
                     {profile.businessName}
                   </p>
                 )}
 
                 {/* Stats Row - Instagram Style */}
-                <div className="flex justify-center md:justify-start gap-8 mb-4">
+                <div className="flex justify-center md:justify-start gap-4 sm:gap-6 md:gap-8 mb-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-gray-900 dark:text-white">
                       {profile.posts?.length || 0}
@@ -205,15 +205,15 @@ export default async function PublicProfilePage({
                   </h2>
                   <div className="space-y-4">
                     {profile.posts.map((post) => (
-                      <article key={post.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-purple-500">
+                      <article key={post.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-4 sm:p-5 md:p-6 border-l-4 border-purple-500">
                         {/* Post Header */}
-                        <div className="flex items-start gap-4 mb-4">
+                        <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                           {/* Profile Avatar */}
                           <div className="flex-shrink-0">
                             {profile.avatar ? (
-                              <Avatar avatarId={profile.avatar} size={48} className="rounded-full" />
+                              <Avatar avatarId={profile.avatar} size={40} className="rounded-full sm:w-12 sm:h-12" />
                             ) : (
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-lg">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-base sm:text-lg">
                                 {profile.displayName.charAt(0).toUpperCase()}
                               </div>
                             )}
@@ -242,12 +242,12 @@ export default async function PublicProfilePage({
                         </div>
 
                         {/* Post Content */}
-                        <div className="mb-4">
-                          <h4 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+                        <div className="mb-3 sm:mb-4">
+                          <h4 className="text-lg sm:text-xl font-bold mb-2 text-gray-900 dark:text-white">
                             {post.title}
                           </h4>
                           {post.excerpt && (
-                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                            <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
                               {post.excerpt}
                             </p>
                           )}
@@ -255,7 +255,7 @@ export default async function PublicProfilePage({
 
                         {/* Cover Image */}
                         {post.coverImage && (
-                          <div className="relative h-64 md:h-80 rounded-xl overflow-hidden mb-4">
+                          <div className="relative h-48 sm:h-56 md:h-64 lg:h-80 rounded-xl overflow-hidden mb-3 sm:mb-4">
                             <Image
                               src={post.coverImage}
                               alt={post.title}
@@ -267,9 +267,9 @@ export default async function PublicProfilePage({
 
                         {/* Additional Images Grid */}
                         {post.images && JSON.parse(post.images).length > 0 && (
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-3 sm:mb-4">
                             {JSON.parse(post.images).slice(0, 4).map((img: string, idx: number) => (
-                              <div key={idx} className="relative h-32 rounded-lg overflow-hidden">
+                              <div key={idx} className="relative h-24 sm:h-28 md:h-32 rounded-lg overflow-hidden">
                                 <Image
                                   src={img}
                                   alt={`Gallery ${idx + 1}`}
@@ -282,7 +282,7 @@ export default async function PublicProfilePage({
                         )}
 
                         {/* Engagement Section - Twitter/X Style */}
-                        <div className="flex items-center gap-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center gap-4 sm:gap-6 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
                           <PostLikeButton postId={post.id} />
                           <PostComments postId={post.id} profileUserId={profile.userId} />
                         </div>

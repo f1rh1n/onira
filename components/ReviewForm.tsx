@@ -53,7 +53,9 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
       });
 
       setTimeout(() => {
-        window.location.reload();
+        if (typeof window !== 'undefined') {
+          window.location.reload();
+        }
       }, 2000);
     } catch (error) {
       setError("Something went wrong");
@@ -86,7 +88,7 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Choose Your Avatar
           </label>
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
             {predefinedAvatars.slice(0, 12).map((avatar) => (
               <motion.button
                 key={avatar.id}

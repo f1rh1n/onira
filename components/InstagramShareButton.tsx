@@ -28,45 +28,60 @@ export default function InstagramShareButton({
         throw new Error('Failed to generate image');
       }
 
+      // Ensure blob has correct image type
       const blob = await response.blob();
-      const file = new File([blob], `review-${reviewId}.png`, { type: 'image/png' });
+      const imageBlob = new Blob([blob], { type: 'image/png' });
+      const file = new File([imageBlob], `onira-review-${reviewId}.png`, { type: 'image/png' });
 
-      // Check if Web Share API is available
-      if (navigator.share && navigator.canShare) {
-        try {
-          // Try to share with files
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'Customer Review',
-              text: 'Check out this amazing review!',
-            });
-            return;
-          }
-        } catch (shareError: any) {
-          // User cancelled share or share failed
-          if (shareError.name !== 'AbortError') {
-            console.error('Share error:', shareError);
+      // Check if Web Share API is available (browser only)
+      if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        // Try Web Share API first (best for mobile)
+        if (navigator.share && navigator.canShare) {
+          try {
+            // Try to share with files
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: 'Customer Review',
+                text: 'Check out this amazing review!',
+              });
+              return;
+            }
+          } catch (shareError: any) {
+            // User cancelled share or share failed
+            if (shareError.name !== 'AbortError') {
+              console.error('Share error:', shareError);
+            } else {
+              return; // User cancelled, don't show fallback
+            }
           }
         }
-      }
 
-      // Fallback: Download the image
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `review-${reviewId}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+        // Fallback: Download the image with proper MIME type
+        const url = URL.createObjectURL(imageBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `onira-review-${reviewId}.png`;
+        a.style.display = 'none';
 
-      // Show helpful message
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        alert('Image downloaded! Open Instagram Stories and upload it from your gallery.');
-      } else {
-        alert('Image downloaded! Transfer it to your phone and share to Instagram Stories.');
+        // Add to body, click, and remove
+        document.body.appendChild(a);
+        a.click();
+
+        // Clean up after a short delay
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
+
+        // Show helpful message
+        if (isMobile) {
+          alert('✅ Image saved! Check your Downloads or Gallery, then open Instagram Stories to share it.');
+        } else {
+          alert('✅ Image downloaded! Transfer it to your phone and share to Instagram Stories.');
+        }
       }
 
     } catch (err) {
