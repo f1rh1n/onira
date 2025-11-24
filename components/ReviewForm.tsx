@@ -71,7 +71,7 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
 
       {success && (
         <div className="bg-green-900/50 border border-green-700 text-green-200 p-3 rounded mb-4">
-          Review submitted! The profile owner will review it before publishing.
+          Review submitted successfully! Thank you for your honest feedback.
         </div>
       )}
 
@@ -200,6 +200,18 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
           {loading ? "Submitting..." : "Submit Review"}
         </button>
       </form>
+
+      {/* Van Gogh Clipart */}
+      <div className="mt-6 flex items-center justify-center gap-3 opacity-70">
+        <img
+          src="/van-gogh.jpg"
+          alt="Van Gogh"
+          className="w-12 h-12 rounded-full border-2 border-purple-500/30 object-cover grayscale hover:grayscale-0 transition-all duration-300"
+        />
+        <p className="text-xs text-gray-500 italic">
+          &quot;Art is to console those who are broken by life&quot; - Van Gogh
+        </p>
+      </div>
     </div>
   );
 }

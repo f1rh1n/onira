@@ -8,8 +8,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // For local development with SQLite, change provider to "sqlite"
-  // For production (Vercel), use "postgresql" with a PostgreSQL connection string
 }
 
 model User {
@@ -59,18 +57,41 @@ model Review {
 }
 
 model Post {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   profileId     String
-  profile       Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile       Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
   title         String
-  content       String    // Blog post content
-  excerpt       String?   // Short description
-  coverImage    String?   // Cover image URL or base64
-  images        String?   // JSON array of additional images
-  category      String?   // Post category
-  tags          String?   // JSON array of tags
-  isPublished   Boolean   @default(true)
-  views         Int       @default(0)
+  content       String        // Blog post content
+  excerpt       String?       // Short description
+  coverImage    String?       // Cover image URL or base64
+  images        String?       // JSON array of additional images
+  category      String?       // Post category
+  tags          String?       // JSON array of tags
+  isPublished   Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  likes         PostLike[]
+  comments      PostComment[]
+}
+
+model PostLike {
+  id            String    @id @default(cuid())
+  postId        String
+  post          Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  anonymousId   String    // Anonymous identifier (stored in browser)
+  createdAt     DateTime  @default(now())
+
+  @@unique([postId, anonymousId]) // One like per anonymous user per post
+}
+
+model PostComment {
+  id            String    @id @default(cuid())
+  postId        String
+  post          Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  commenterName String    // Anonymous name chosen by commenter
+  commenterAvatar String? // Avatar ID chosen by commenter
+  comment       String
+  anonymousId   String    // Anonymous identifier for tracking
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }

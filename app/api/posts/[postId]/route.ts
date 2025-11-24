@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { postId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +25,7 @@ export async function DELETE(
 
     // Verify ownership
     const post = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id: params.postId },
     });
 
     if (!post || post.profileId !== user.profile.id) {
@@ -33,7 +33,7 @@ export async function DELETE(
     }
 
     await prisma.post.delete({
-      where: { id: params.id },
+      where: { id: params.postId },
     });
 
     return NextResponse.json({ success: true });
@@ -48,7 +48,7 @@ export async function DELETE(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { postId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -68,7 +68,7 @@ export async function PUT(
 
     // Verify ownership
     const existingPost = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id: params.postId },
     });
 
     if (!existingPost || existingPost.profileId !== user.profile.id) {
@@ -79,7 +79,7 @@ export async function PUT(
     const { title, content, excerpt, coverImage, images, category, tags, isPublished } = body;
 
     const post = await prisma.post.update({
-      where: { id: params.id },
+      where: { id: params.postId },
       data: {
         title,
         content,

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
+import Logo from "@/components/Logo";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { HiPhoto, HiXMark } from "react-icons/hi2";
 
@@ -98,7 +99,7 @@ export default function NewPostPage() {
       <header className="glass-nav sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="transition-transform hover:scale-105">
-            <Image src="/logo.png" alt="Onira" width={50} height={50} />
+            <Logo />
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/dashboard/posts" className="text-foreground/80 hover:text-foreground transition">

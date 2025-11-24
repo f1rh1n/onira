@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
+import Logo from "@/components/Logo";
 import { QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import ThemeToggle from "@/app/components/ThemeToggle";
@@ -156,7 +157,7 @@ export default function QRStudioPage() {
       <header className="bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-gray-800">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard">
-            <Image src="/logo.png" alt="Onira" width={50} height={50} />
+            <Logo />
           </Link>
           <div className="flex items-center gap-4">
             {profile.avatar && (

@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
+import Logo from "@/components/Logo";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Avatar from "@/components/Avatar";
+import InstagramShareButton from "@/components/InstagramShareButton";
 
 interface Review {
   id: string;
@@ -111,17 +113,6 @@ export default function ReviewsDashboardPage() {
     }
   };
 
-  const shareToInstagram = (review: Review) => {
-    // Create a shareable text
-    const shareText = `${review.reviewerName} said:\n\n"${review.comment}"\n\n${"⭐".repeat(review.rating)}`;
-
-    // Copy to clipboard
-    navigator.clipboard.writeText(shareText);
-    alert("Review text copied to clipboard! You can now paste it into your Instagram story.");
-
-    // Note: Direct Instagram sharing requires the Instagram API and is limited.
-    // For now, we'll provide the text for manual sharing.
-  };
 
   const filteredReviews = reviews.filter(review => {
     if (filter === "published") return review.isPublished;
@@ -146,7 +137,7 @@ export default function ReviewsDashboardPage() {
       <header className="bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-gray-800">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard">
-            <Image src="/logo.png" alt="Onira" width={50} height={50} />
+            <Logo />
           </Link>
           <div className="flex items-center gap-4">
             {profile?.avatar && (
@@ -276,12 +267,10 @@ export default function ReviewsDashboardPage() {
                     {review.isPublished ? "Unpublish" : "Publish"}
                   </button>
                   {review.isPublished && (
-                    <button
-                      onClick={() => shareToInstagram(review)}
-                      className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded hover:from-purple-600 hover:to-pink-600"
-                    >
-                      Share to Instagram
-                    </button>
+                    <InstagramShareButton
+                      reviewId={review.id}
+                      variant="full"
+                    />
                   )}
                   <button
                     onClick={() => deleteReview(review.id)}

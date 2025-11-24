@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import ReviewForm from "@/components/ReviewForm";
 import Image from "next/image";
 import Avatar from "@/components/Avatar";
+import InstagramShareButton from "@/components/InstagramShareButton";
+import PostLikeButton from "@/components/PostLikeButton";
+import PostComments from "@/components/PostComments";
 
 async function getProfileByUsername(username: string) {
   const user = await prisma.user.findUnique({
@@ -51,13 +54,40 @@ export default async function PublicProfilePage({
     ? profile.reviews.reduce((sum, review) => sum + review.rating, 0) / profile.reviews.length
     : 0;
 
+  // Random background image
+  const backgroundImages = [
+    '/photos/0e958fc52e2041a181dd5f5e5db5e240.jpg',
+    '/photos/2f44b645f350e5ab5b0af515eca2765c.jpg',
+    '/photos/38f176db36e57fed2b2aff43b7295e25.jpg',
+    '/photos/41f267491032c24bbf9c9ccec7e5a691.jpg',
+    '/photos/f476c829853e16534c9b857cffd1f128.jpg',
+  ];
+  const randomBg = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
+    <div
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: `url(${randomBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Dark overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/30 dark:bg-black/50"></div>
+
+      {/* Content wrapper */}
+      <div className="relative z-10 min-h-screen">
       {/* Header */}
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800">
         <nav className="container mx-auto px-4 py-3">
-          <a href="/" className="transition-transform hover:scale-105 inline-block">
-            <Image src="/logo.png" alt="Onira" width={40} height={40} />
+          <a href="/" className="transition-transform hover:scale-105 inline-block text-3xl font-bold tracking-wider">
+            <span className="text-purple-600">O</span>
+            <span className="text-purple-600">N</span>
+            <span className="text-blue-500">I</span>
+            <span className="text-purple-600">R</span>
+            <span className="text-purple-600">A</span>
           </a>
         </nav>
       </header>
@@ -166,18 +196,66 @@ export default async function PublicProfilePage({
             {/* Main Content - Posts and Reviews */}
             <div className="lg:col-span-2 space-y-8">
 
-              {/* Posts Section */}
+              {/* Posts Section - Twitter/X Style */}
               {profile.posts && profile.posts.length > 0 && (
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                     <span className="text-3xl">📝</span>
                     Latest Posts
                   </h2>
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {profile.posts.map((post) => (
-                      <article key={post.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                      <article key={post.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-purple-500">
+                        {/* Post Header */}
+                        <div className="flex items-start gap-4 mb-4">
+                          {/* Profile Avatar */}
+                          <div className="flex-shrink-0">
+                            {profile.avatar ? (
+                              <Avatar avatarId={profile.avatar} size={48} className="rounded-full" />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-lg">
+                                {profile.displayName.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Post Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-bold text-gray-900 dark:text-white">
+                                {profile.displayName}
+                              </h3>
+                              {post.category && (
+                                <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold rounded-full">
+                                  {post.category}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {new Date(post.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Post Content */}
+                        <div className="mb-4">
+                          <h4 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+                            {post.title}
+                          </h4>
+                          {post.excerpt && (
+                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                              {post.excerpt}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Cover Image */}
                         {post.coverImage && (
-                          <div className="relative h-64 md:h-80">
+                          <div className="relative h-64 md:h-80 rounded-xl overflow-hidden mb-4">
                             <Image
                               src={post.coverImage}
                               alt={post.title}
@@ -186,45 +264,27 @@ export default async function PublicProfilePage({
                             />
                           </div>
                         )}
-                        <div className="p-6">
-                          {post.category && (
-                            <span className="inline-block px-4 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full mb-3 shadow-md">
-                              {post.category}
-                            </span>
-                          )}
-                          <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition">
-                            {post.title}
-                          </h3>
-                          {post.excerpt && (
-                            <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-                              {post.excerpt}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                            <time dateTime={new Date(post.createdAt).toISOString()}>
-                              {new Date(post.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </time>
-                            <span>•</span>
-                            <span>👁️ {post.views} views</span>
+
+                        {/* Additional Images Grid */}
+                        {post.images && JSON.parse(post.images).length > 0 && (
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                            {JSON.parse(post.images).slice(0, 4).map((img: string, idx: number) => (
+                              <div key={idx} className="relative h-32 rounded-lg overflow-hidden">
+                                <Image
+                                  src={img}
+                                  alt={`Gallery ${idx + 1}`}
+                                  fill
+                                  className="object-cover hover:scale-110 transition"
+                                />
+                              </div>
+                            ))}
                           </div>
-                          {post.images && JSON.parse(post.images).length > 0 && (
-                            <div className="mt-4 grid grid-cols-4 gap-2">
-                              {JSON.parse(post.images).slice(0, 4).map((img: string, idx: number) => (
-                                <div key={idx} className="relative h-20 rounded-xl overflow-hidden">
-                                  <Image
-                                    src={img}
-                                    alt={`Gallery ${idx + 1}`}
-                                    fill
-                                    className="object-cover hover:scale-110 transition"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                        )}
+
+                        {/* Engagement Section - Twitter/X Style */}
+                        <div className="flex items-center gap-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                          <PostLikeButton postId={post.id} />
+                          <PostComments postId={post.id} profileUserId={profile.userId} />
                         </div>
                       </article>
                     ))}
@@ -297,10 +357,10 @@ export default async function PublicProfilePage({
                                 <span className="text-xl group-hover:scale-110 transition">💜</span>
                                 <span className="text-sm">Like</span>
                               </button>
-                              <button className="flex items-center gap-1.5 hover:text-pink-500 transition group">
-                                <span className="text-xl group-hover:scale-110 transition">🔁</span>
-                                <span className="text-sm">Share</span>
-                              </button>
+                              <InstagramShareButton
+                                reviewId={review.id}
+                                variant="icon"
+                              />
                             </div>
                           </div>
                         </div>
@@ -323,6 +383,7 @@ export default async function PublicProfilePage({
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

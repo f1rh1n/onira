@@ -80,15 +80,40 @@ export default function RegisterPage() {
     }
   };
 
+  // Random background image
+  const backgroundImages = [
+    '/photos/0e958fc52e2041a181dd5f5e5db5e240.jpg',
+    '/photos/2f44b645f350e5ab5b0af515eca2765c.jpg',
+    '/photos/38f176db36e57fed2b2aff43b7295e25.jpg',
+    '/photos/41f267491032c24bbf9c9ccec7e5a691.jpg',
+    '/photos/f476c829853e16534c9b857cffd1f128.jpg',
+  ];
+  const randomBg = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-950">
-      <div className="absolute top-4 right-4">
+    <div
+      className="min-h-screen flex items-center justify-center relative"
+      style={{
+        backgroundImage: `url(${randomBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Dark overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
+
+      <div className="absolute top-4 right-4 z-20">
         <ThemeToggle />
       </div>
-      <div className="max-w-md w-full space-y-8 p-8 glass-card m-4">
+      <div className="max-w-md w-full space-y-8 p-8 glass-card m-4 relative z-10 bg-white/95 dark:bg-gray-900/95">
         <div>
-          <Link href="/" className="inline-block mb-4 transition-transform hover:scale-105">
-            <Image src="/logo.png" alt="Onira" width={50} height={50} />
+          <Link href="/" className="inline-block mb-4 transition-transform hover:scale-105 text-4xl font-bold tracking-wider">
+            <span className="text-purple-600">O</span>
+            <span className="text-purple-600">N</span>
+            <span className="text-blue-500">I</span>
+            <span className="text-purple-600">R</span>
+            <span className="text-purple-600">A</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent">
             Create your account

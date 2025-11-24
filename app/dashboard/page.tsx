@@ -7,11 +7,12 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { FiTrendingUp, FiStar, FiEye, FiMessageSquare, FiSettings, FiLogOut, FiCamera } from "react-icons/fi";
+import { FiTrendingUp, FiStar, FiMessageSquare, FiSettings, FiLogOut, FiCamera } from "react-icons/fi";
 import StatsCard from "@/components/StatsCard";
 import ReviewsChart from "@/components/ReviewsChart";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Avatar from "@/components/Avatar";
+import Logo from "@/components/Logo";
 
 interface Profile {
   id: string;
@@ -92,8 +93,8 @@ export default function DashboardPage() {
         className="bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 backdrop-blur-sm"
       >
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/">
-            <Image src="/logo.png" alt="Onira" width={50} height={50} />
+          <Link href="/" className="transition-transform hover:scale-105">
+            <Logo />
           </Link>
           <div className="flex items-center space-x-4">
             {profile?.avatar && (
@@ -164,7 +165,7 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* Stats Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               <StatsCard
                 title="Total Reviews"
                 value={profile._count?.reviews || 0}
@@ -173,25 +174,18 @@ export default function DashboardPage() {
                 delay={0.1}
               />
               <StatsCard
-                title="Profile Views"
-                value={1247}
-                icon={<FiEye />}
-                trend={8}
-                delay={0.2}
-              />
-              <StatsCard
                 title="Average Rating"
                 value={4.8}
                 icon={<FiStar />}
                 suffix="/5"
-                delay={0.3}
+                delay={0.2}
               />
               <StatsCard
                 title="Total Posts"
                 value={profile._count?.posts || 0}
                 icon={<FiTrendingUp />}
                 trend={-2}
-                delay={0.4}
+                delay={0.3}
               />
             </div>
 

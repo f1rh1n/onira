@@ -29,6 +29,28 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Custom font styles */
+.font-heading {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.font-body-bold {
+  font-weight: 600;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.font-serif-elegant {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+}
+
+.font-mono-tech {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 500;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

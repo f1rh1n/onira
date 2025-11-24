@@ -3,13 +3,40 @@ import Image from "next/image";
 import ThemeToggle from "./components/ThemeToggle";
 
 export default function Home() {
+  // Random background image
+  const backgroundImages = [
+    '/photos/0e958fc52e2041a181dd5f5e5db5e240.jpg',
+    '/photos/2f44b645f350e5ab5b0af515eca2765c.jpg',
+    '/photos/38f176db36e57fed2b2aff43b7295e25.jpg',
+    '/photos/41f267491032c24bbf9c9ccec7e5a691.jpg',
+    '/photos/f476c829853e16534c9b857cffd1f128.jpg',
+  ];
+  const randomBg = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-950">
+    <div
+      className="min-h-screen flex flex-col relative"
+      style={{
+        backgroundImage: `url(${randomBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Dark overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/40 dark:bg-black/60"></div>
+
+      {/* Content wrapper */}
+      <div className="relative z-10 min-h-screen flex flex-col">
       {/* Header */}
       <header className="glass-nav sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="transition-transform hover:scale-105">
-            <Image src="/logo.png" alt="Onira" width={50} height={50} />
+          <Link href="/" className="transition-transform hover:scale-105 text-3xl font-bold tracking-wider">
+            <span className="text-purple-600">O</span>
+            <span className="text-purple-600">N</span>
+            <span className="text-blue-500">I</span>
+            <span className="text-purple-600">R</span>
+            <span className="text-purple-600">A</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-foreground/80 hover:text-foreground transition">
@@ -29,14 +56,14 @@ export default function Home() {
       {/* Hero Section */}
       <main className="flex-1 flex items-center justify-center">
         <div className="container mx-auto px-4 py-16 text-center">
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary-600 via-secondary-500 to-accent-500 bg-clip-text text-transparent">
-            Build Your Portfolio,
+          <h2 className="text-5xl md:text-6xl font-heading mb-6 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+            Get Anonymous Reviews
             <br />
-            Receive Anonymous Reviews
+            For Your Business
           </h2>
-          <p className="text-xl text-foreground/70 mb-8 max-w-2xl mx-auto">
-            Create a beautiful portfolio for your business or personal brand.
-            Let others leave anonymous reviews that you can moderate and share.
+          <p className="text-xl font-body-bold text-white/90 mb-8 max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+            Let your customers share honest feedback anonymously.
+            Build trust and showcase authentic reviews on your profile.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link
@@ -56,32 +83,32 @@ export default function Home() {
       </main>
 
       {/* Features Section */}
-      <section id="features" className="py-16 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-slate-800/50 dark:to-purple-900/50">
+      <section id="features" className="py-16 bg-black/30 backdrop-blur-sm">
         <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold text-center mb-12 bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent">How It Works</h3>
+          <h3 className="text-3xl font-heading text-center mb-12 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">How It Works</h3>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="glass-card p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <div className="text-4xl mb-4">📝</div>
-              <h4 className="text-xl font-semibold mb-2 text-foreground">Create Your Portfolio</h4>
-              <p className="text-foreground/70">
-                Set up your profile with your business info, photos, and content.
-                Perfect for bakeries, cafes, freelancers, and more.
+            <div className="glass-card p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-white/90 dark:bg-gray-900/90">
+              <div className="text-4xl mb-4">🔗</div>
+              <h4 className="text-xl font-serif-elegant mb-2 text-foreground">Share Your Link</h4>
+              <p className="font-body-bold text-foreground/80">
+                Get your unique review link and share it with customers.
+                Perfect for businesses, services, and professionals.
               </p>
             </div>
-            <div className="glass-card p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+            <div className="glass-card p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-white/90 dark:bg-gray-900/90">
               <div className="text-4xl mb-4">💬</div>
-              <h4 className="text-xl font-semibold mb-2 text-foreground">Receive Anonymous Reviews</h4>
-              <p className="text-foreground/70">
-                Anyone can leave a review without creating an account.
-                They can use any name they want - completely anonymous.
+              <h4 className="text-xl font-serif-elegant mb-2 text-foreground">Collect Anonymous Feedback</h4>
+              <p className="font-body-bold text-foreground/80">
+                Customers leave honest reviews without creating accounts.
+                They choose any name they want - completely anonymous.
               </p>
             </div>
-            <div className="glass-card p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+            <div className="glass-card p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-white/90 dark:bg-gray-900/90">
               <div className="text-4xl mb-4">✨</div>
-              <h4 className="text-xl font-semibold mb-2 text-foreground">Moderate & Share</h4>
-              <p className="text-foreground/70">
-                Choose which reviews to publish publicly.
-                Share the best ones directly to your Instagram stories.
+              <h4 className="text-xl font-serif-elegant mb-2 text-foreground">Publish & Share</h4>
+              <p className="font-body-bold text-foreground/80">
+                Display reviews on your public page and share the best ones
+                directly to your Instagram stories.
               </p>
             </div>
           </div>
@@ -91,9 +118,10 @@ export default function Home() {
       {/* Footer */}
       <footer className="glass-nav border-t border-foreground/10 py-8">
         <div className="container mx-auto px-4 text-center text-foreground/60">
-          <p>&copy; 2024 Onira. All rights reserved.</p>
+          <p>&copy; 2025 Onira. All rights reserved.</p>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
