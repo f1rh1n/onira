@@ -91,6 +91,7 @@ export async function PUT(request: Request) {
       website,
       instagram,
       isPublished,
+      avatar,
     } = body;
 
     // Update profile
@@ -108,6 +109,7 @@ export async function PUT(request: Request) {
         website: website || null,
         instagram: instagram || null,
         isPublished: isPublished !== undefined ? isPublished : true,
+        avatar: avatar || null,
       },
     });
 

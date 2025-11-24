@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { predefinedAvatars, getAvatarUrl } from "@/lib/avatars";
 import Image from "next/image";
@@ -14,6 +14,13 @@ interface AvatarPickerProps {
 export default function AvatarPicker({ selectedAvatar, onSelect }: AvatarPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentAvatar, setCurrentAvatar] = useState(selectedAvatar || predefinedAvatars[0].id);
+
+  // Update currentAvatar when selectedAvatar prop changes
+  useEffect(() => {
+    if (selectedAvatar) {
+      setCurrentAvatar(selectedAvatar);
+    }
+  }, [selectedAvatar]);
 
   const handleSelect = (avatarId: string) => {
     setCurrentAvatar(avatarId);
