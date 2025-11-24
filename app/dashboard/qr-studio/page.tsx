@@ -88,7 +88,13 @@ export default function QRStudioPage() {
 
       try {
         const avatarUrl = getAvatarUrl(avatarData.seed, avatarData.style);
-        const response = await fetch(avatarUrl);
+        console.log('Fetching avatar for QR:', avatarUrl);
+        const response = await fetch(avatarUrl, { mode: 'cors' });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch avatar: ${response.status}`);
+        }
+
         const svgText = await response.text();
         const blob = new Blob([svgText], { type: 'image/svg+xml' });
         const dataUrl = await new Promise<string>((resolve) => {
@@ -96,6 +102,7 @@ export default function QRStudioPage() {
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(blob);
         });
+        console.log('Avatar data URL created successfully');
         setAvatarDataUrl(dataUrl);
       } catch (error) {
         console.error("Error loading avatar for QR:", error);
