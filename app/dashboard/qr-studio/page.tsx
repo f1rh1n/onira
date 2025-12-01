@@ -128,47 +128,23 @@ export default function QRStudioPage() {
         canvas.toBlob((b) => resolve(b!), "image/png", 1.0);
       });
 
-      // Create file for sharing
-      const file = new File([blob], `${profile?.displayName || "profile"}-qr.png`, { type: "image/png" });
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `qr-code-${Date.now()}.png`;
+      a.click();
+
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 100);
 
       // Check if mobile
       const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-      // Try Web Share API first (for mobile)
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: `${profile?.displayName || "Profile"} QR Code`,
-            text: 'Scan to view my profile!',
-          });
-          return;
-        } catch (shareError: any) {
-          // User cancelled or share failed
-          if (shareError.name === 'AbortError') {
-            return; // User cancelled, don't show fallback
-          }
-          console.error('Share error:', shareError);
-        }
-      }
-
-      // Fallback: Download the image
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${profile?.displayName || "profile"}-qr.png`;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
-
       // Show helpful message
       if (isMobile) {
-        alert("✅ QR code saved to your device! Check your Downloads or Gallery.");
+        alert("✅ QR code saved! Check your Downloads folder or Gallery app.");
       } else {
         alert("✅ QR code downloaded!");
       }
@@ -188,55 +164,55 @@ export default function QRStudioPage() {
         useCORS: true,
       });
 
-      // Convert to blob
+      // Convert canvas to blob
       const blob = await new Promise<Blob>((resolve) => {
         canvas.toBlob((b) => resolve(b!), "image/png", 1.0);
       });
 
-      const file = new File([blob], `${profile?.displayName || "profile"}-qr.png`, { type: "image/png" });
+      const file = new File([blob], `qr-${Date.now()}.png`, {
+        type: "image/png",
+        lastModified: Date.now()
+      });
 
       // Check if mobile
       const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-      // Try Web Share API first
-      if (navigator.share && navigator.canShare) {
+      // For mobile devices, try Web Share API
+      if (isMobile && navigator.share && navigator.canShare) {
         try {
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
-              title: `${profile?.displayName || "Profile"} QR Code`,
-              text: 'Scan to view my profile!',
+              title: 'My QR Code',
+              text: 'Share my profile QR code',
             });
             return;
           }
         } catch (shareError: any) {
-          if (shareError.name !== 'AbortError') {
-            console.error('Share error:', shareError);
-          } else {
+          if (shareError.name === 'AbortError') {
             return; // User cancelled
           }
+          console.error('Share error:', shareError);
+          // Continue to fallback
         }
       }
 
-      // Fallback: Download and show instructions
+      // Fallback: Create download link
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${profile?.displayName || "profile"}-qr-instagram.png`;
-      a.style.display = "none";
-      document.body.appendChild(a);
+      a.download = `qr-code-${Date.now()}.png`;
       a.click();
 
       setTimeout(() => {
-        document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }, 100);
 
-      // Show helpful message
+      // Show instructions
       if (isMobile) {
-        alert('✅ Image saved! Check your Downloads or Gallery, then open Instagram Stories to share it.');
+        alert('✅ Image saved! Open your Gallery app, find the image, tap Share, and select Instagram Stories.');
       } else {
-        alert('✅ Image downloaded! Transfer it to your phone and share to Instagram Stories.');
+        alert('✅ Image downloaded! Transfer it to your phone, open Gallery, tap Share → Instagram Stories.');
       }
     } catch (error) {
       console.error("Error sharing to Instagram:", error);
