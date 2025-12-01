@@ -47,9 +47,18 @@ export async function POST(
   try {
     const { anonymousId } = await request.json();
 
-    if (!anonymousId) {
+    // Validate anonymousId
+    if (!anonymousId || typeof anonymousId !== 'string' || anonymousId.trim() === '') {
       return NextResponse.json(
-        { error: "Anonymous ID is required" },
+        { error: "Valid anonymous ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate postId
+    if (!params.postId || typeof params.postId !== 'string') {
+      return NextResponse.json(
+        { error: "Valid post ID is required" },
         { status: 400 }
       );
     }
@@ -108,7 +117,11 @@ export async function POST(
       });
     }
   } catch (error) {
-    console.error("Error toggling like:", error);
+    console.error("Error toggling like:", {
+      error,
+      postId: params.postId,
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
     return NextResponse.json(
       { error: "Failed to toggle like" },
       { status: 500 }

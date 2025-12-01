@@ -23,24 +23,56 @@ export default function PostLikeButton({ postId }: PostLikeButtonProps) {
         const data = await res.json();
         setLiked(data.hasLiked);
         setLikeCount(data.likeCount);
+      } else {
+        console.error("Error fetching like status:", {
+          status: res.status,
+          statusText: res.statusText,
+          postId,
+          anonymousId: id,
+        });
       }
     } catch (error) {
-      console.error("Error fetching like status:", error);
+      console.error("Error fetching like status:", {
+        error,
+        postId,
+        anonymousId: id,
+        endpoint: `/api/posts/${postId}/like`,
+      });
     }
   }, [postId]);
 
-  // Get or create anonymous ID - SSR safe
+  // Get or create anonymous ID - SSR safe with fallback
   useEffect(() => {
     setMounted(true);
 
-    // Only access localStorage in browser
+    // Only access storage in browser
     if (typeof window === 'undefined') return;
 
-    let id = localStorage.getItem("anonymousId");
-    if (!id) {
-      id = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem("anonymousId", id);
+    let id = null;
+
+    try {
+      // Try localStorage first (preferred)
+      id = localStorage.getItem("anonymousId");
+      if (!id) {
+        id = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem("anonymousId", id);
+      }
+    } catch (e) {
+      // Fallback to sessionStorage if localStorage is blocked (Safari private, strict security)
+      console.warn("localStorage unavailable, using sessionStorage fallback", e);
+      try {
+        id = sessionStorage.getItem("anonymousId");
+        if (!id) {
+          id = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          sessionStorage.setItem("anonymousId", id);
+        }
+      } catch (sessionError) {
+        // Last resort: in-memory only (will reset on page refresh)
+        console.warn("All storage unavailable, using memory-only fallback", sessionError);
+        id = `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      }
     }
+
     setAnonymousId(id);
     fetchLikeStatus(id);
   }, [postId, fetchLikeStatus]);
@@ -73,7 +105,13 @@ export default function PostLikeButton({ postId }: PostLikeButtonProps) {
         setLikeCount(previousCount);
       }
     } catch (error) {
-      console.error("Error toggling like:", error);
+      console.error("Error toggling like:", {
+        error,
+        postId,
+        anonymousId,
+        method: 'POST',
+        endpoint: `/api/posts/${postId}/like`,
+      });
       // Revert on error
       setLiked(previousLiked);
       setLikeCount(previousCount);

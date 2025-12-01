@@ -9,7 +9,6 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { FiTrendingUp, FiStar, FiMessageSquare, FiSettings, FiLogOut, FiCamera } from "react-icons/fi";
 import StatsCard from "@/components/StatsCard";
-import ReviewsChart from "@/components/ReviewsChart";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Avatar from "@/components/Avatar";
 import Logo from "@/components/Logo";
@@ -73,16 +72,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Mock data for chart
-  const chartData = [
-    { name: 'Mon', reviews: 4 },
-    { name: 'Tue', reviews: 3 },
-    { name: 'Wed', reviews: 7 },
-    { name: 'Thu', reviews: 5 },
-    { name: 'Fri', reviews: 8 },
-    { name: 'Sat', reviews: 12 },
-    { name: 'Sun', reviews: 10 },
-  ];
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
@@ -189,11 +178,8 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* Charts Section */}
-            <div className="grid lg:grid-cols-2 gap-6">
-              <ReviewsChart data={chartData} />
-
-              <motion.div
+            {/* Quick Actions Section */}
+            <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
@@ -275,8 +261,7 @@ export default function DashboardPage() {
                     </div>
                   </button>
                 </div>
-              </motion.div>
-            </div>
+            </motion.div>
 
             {/* Profile Status */}
             <motion.div

@@ -81,40 +81,81 @@ Option B: Manual
 1. Go to **Deployments** tab
 2. Click **Redeploy** on latest deployment
 
-### Step 5: Initialize Database Schema
+### Step 5: Initialize Database Schema (⚠️ CRITICAL - REQUIRED FOR APP TO WORK)
 
-**IMPORTANT**: After first successful deployment, run this to create tables:
+**THIS STEP IS MANDATORY!** Without it, post likes, comments, reviews, and other features will not work in production.
+
+#### Quick Steps:
 
 ```bash
-# Install Vercel CLI
+# 1. Install Vercel CLI (if not already installed)
 npm i -g vercel
 
-# Login
+# 2. Login to Vercel
 vercel login
 
-# Link project
+# 3. Link to your project
 vercel link
 
-# Pull production environment variables
+# 4. Pull production environment variables
 vercel env pull .env.production
 
-# Initialize database with schema
+# 5. Push database schema to production (CREATES ALL TABLES)
 npx prisma db push
+
+# 6. Verify database setup (RECOMMENDED)
+node scripts/verify-production.js
 ```
 
-Alternative if you have production DATABASE_URL:
+#### What This Does:
+
+This creates all required tables in your PostgreSQL database:
+- ✅ User, Profile
+- ✅ Post, **PostLike**, **PostComment** (required for likes/comments to work)
+- ✅ Review
+- ✅ PasswordReset
+
+#### Alternative Method (If you have DATABASE_URL):
+
 ```bash
-# Set environment variable temporarily
 # Windows PowerShell:
 $env:DATABASE_URL="your-postgres-url-from-vercel"
-
-# Then run:
 npx prisma db push
+
+# Mac/Linux:
+DATABASE_URL="your-postgres-url-from-vercel" npx prisma db push
 ```
 
 ---
 
-## 🧪 Post-Deployment Testing
+## 🧪 Post-Deployment Testing & Verification
+
+### Step 1: Verify Database Setup (CRITICAL)
+
+Run the automated verification script:
+
+```bash
+node scripts/verify-production.js
+```
+
+This checks:
+- ✅ Database connection works
+- ✅ All tables exist (User, Profile, Post, PostLike, PostComment, Review, PasswordReset)
+- ✅ Tables are accessible
+
+**Expected Output:**
+```
+🔍 Verifying Production Database Setup
+==================================================
+📡 Checking database connection...
+✅ Database connected successfully
+💜 Checking PostLike table...
+✅ PostLike table exists (0 likes)
+...
+🎉 ALL CHECKS PASSED!
+```
+
+### Step 2: Test in Production Browser
 
 ### Critical Features to Test
 
@@ -154,6 +195,60 @@ npx prisma db push
 
 ## 🔍 Troubleshooting Production Issues
 
+### 🚨 Post Likes Not Working? (MOST COMMON ISSUE)
+
+**Symptoms:**
+- ✅ Likes work in development
+- ❌ Can't like posts in production
+- ❌ Like count shows 0 or doesn't display
+- ❌ Browser console may show fetch errors
+
+**Root Cause:** PostLike table doesn't exist in production database
+
+**Solution:**
+```bash
+# 1. Pull production environment
+vercel env pull .env.production
+
+# 2. Push database schema (CRITICAL)
+npx prisma db push
+
+# 3. Verify tables were created
+node scripts/verify-production.js
+
+# 4. Redeploy to ensure latest code is live
+vercel --prod
+```
+
+**After fixing, test:**
+1. Open production site in browser
+2. Navigate to a profile with posts
+3. Click like button (heart icon)
+4. Like count should increase
+5. Refresh page - like should persist
+
+**If still not working:**
+- Check browser console (F12) for errors
+- Check Vercel logs for API errors
+- Ensure you're testing with the latest deployment
+
+### localStorage Warnings (NORMAL - NOT AN ERROR)
+
+**You might see in console:**
+```
+⚠️ localStorage unavailable, using sessionStorage fallback
+```
+
+**This is NORMAL and expected** for:
+- Safari private browsing
+- Browsers with strict security settings
+- Some mobile browsers
+
+**What happens:**
+- App automatically falls back to sessionStorage
+- If that's blocked, uses memory-only storage
+- Likes still work, may not persist across browser restarts
+
 ### Common Errors and Solutions
 
 | Error | Cause | Solution |
@@ -164,6 +259,7 @@ npx prisma db push
 | **"NEXTAUTH_SECRET must be provided"** | Missing env var | Add `NEXTAUTH_SECRET` in Vercel |
 | **Dynamic route conflict** | Route naming mismatch | All routes use `[postId]` consistently ✅ |
 | **Edge Runtime errors** | Wrong runtime used | Check API routes don't use Node-only features |
+| **Post likes not working** | PostLike table missing | Run `npx prisma db push`, then verify |
 
 ### Check Vercel Logs
 
