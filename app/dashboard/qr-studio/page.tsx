@@ -159,64 +159,64 @@ export default function QRStudioPage() {
 
     try {
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 3, // High quality for Instagram
+        backgroundColor: "#ffffff",
+        scale: 3,
         useCORS: true,
+        allowTaint: true,
+        logging: false,
       });
 
-      // Convert canvas to blob
+      // Convert to blob with high quality
       const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((b) => resolve(b!), "image/png", 1.0);
+        canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.95);
       });
 
-      const file = new File([blob], `qr-${Date.now()}.png`, {
-        type: "image/png",
-        lastModified: Date.now()
+      // Create File object with proper metadata
+      const file = new File([blob], "qr-code.jpg", {
+        type: "image/jpeg",
+        lastModified: Date.now(),
       });
 
-      // Check if mobile
-      const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      // For mobile devices, try Web Share API
-      if (isMobile && navigator.share && navigator.canShare) {
+      // Check if we can share files
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'My QR Code',
-              text: 'Share my profile QR code',
-            });
-            return;
-          }
-        } catch (shareError: any) {
-          if (shareError.name === 'AbortError') {
+          await navigator.share({
+            files: [file],
+            title: "My QR Code",
+            text: "Scan to view my profile",
+          });
+          return; // Successfully shared
+        } catch (err: any) {
+          if (err.name === 'AbortError') {
             return; // User cancelled
           }
-          console.error('Share error:', shareError);
-          // Continue to fallback
+          console.error("Share failed:", err);
         }
       }
 
-      // Fallback: Create download link
+      // Fallback: Download with instructions
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `qr-code-${Date.now()}.png`;
-      a.click();
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "qr-code.jpg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 100);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
 
-      // Show instructions
+      // Show helpful instructions
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
-        alert('✅ Image saved! Open your Gallery app, find the image, tap Share, and select Instagram Stories.');
+        setTimeout(() => {
+          alert('📱 Image downloaded!\n\n1. Open your Photos/Gallery app\n2. Find "qr-code.jpg"\n3. Tap Share button\n4. Select Instagram → Add to Story');
+        }, 300);
       } else {
-        alert('✅ Image downloaded! Transfer it to your phone, open Gallery, tap Share → Instagram Stories.');
+        alert('💻 Image downloaded!\n\nTransfer to your phone and share to Instagram Stories from your Gallery app.');
       }
     } catch (error) {
-      console.error("Error sharing to Instagram:", error);
-      alert("Failed to share. Please try again.");
+      console.error("Error:", error);
+      alert("Failed to create image. Please try again.");
     }
   };
 

@@ -28,54 +28,51 @@ export default function InstagramShareButton({
         throw new Error('Failed to generate image');
       }
 
-      // Get blob with correct image type
+      // Get blob
       const blob = await response.blob();
-      const imageBlob = new Blob([blob], { type: 'image/png' });
-      const file = new File([imageBlob], `review-${Date.now()}.png`, {
-        type: 'image/png',
-        lastModified: Date.now()
+
+      // Create File object with proper metadata for sharing
+      const file = new File([blob], "review.jpg", {
+        type: "image/jpeg",
+        lastModified: Date.now(),
       });
 
-      // Check if mobile
-      const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      // Try Web Share API for mobile
-      if (isMobile && navigator.share && navigator.canShare) {
+      // Try Web Share API (works on mobile)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'Customer Review',
-              text: 'Check out this review!',
-            });
-            return;
-          }
-        } catch (shareError: any) {
-          if (shareError.name === 'AbortError') {
+          await navigator.share({
+            files: [file],
+            title: 'Customer Review',
+            text: 'Check out this review!',
+          });
+          return; // Successfully shared
+        } catch (err: any) {
+          if (err.name === 'AbortError') {
             return; // User cancelled
           }
-          console.error('Share error:', shareError);
-          // Continue to fallback
+          console.error('Share error:', err);
         }
       }
 
-      // Fallback: Download the image
-      const url = URL.createObjectURL(imageBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `review-${Date.now()}.png`;
-      a.click();
+      // Fallback: Download with instructions
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = "review.jpg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-      // Clean up
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 100);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
 
-      // Show instructions
+      // Show helpful instructions
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
-        alert('✅ Image saved! Open your Gallery app, find the image, tap Share, and select Instagram Stories.');
+        setTimeout(() => {
+          alert('📱 Image downloaded!\n\n1. Open your Photos/Gallery app\n2. Find "review.jpg"\n3. Tap Share button\n4. Select Instagram → Add to Story');
+        }, 300);
       } else {
-        alert('✅ Image downloaded! Transfer it to your phone, open Gallery, tap Share → Instagram Stories.');
+        alert('💻 Image downloaded!\n\nTransfer to your phone and share to Instagram Stories from your Gallery app.');
       }
 
     } catch (err) {
