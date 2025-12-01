@@ -46,7 +46,14 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git log:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(git add:*)",
+      "Bash(rd /s /q \"node_modules\\.prisma\")",
+      "Bash(rd /s /q \"node_modules\\@prisma\\client\")",
+      "Bash(./push-db.bat)",
+      "Bash(node scripts/verify-production.js:*)",
+      "Bash(./verify-db.bat)",
+      "Bash(del push-db.bat verify-db.bat)"
     ],
     "deny": [],
     "ask": []

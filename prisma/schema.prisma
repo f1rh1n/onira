@@ -3,23 +3,25 @@
 
 // IMPORTANT: Database Provider Configuration
 // ==========================================
-// Development: Uses SQLite (provider = "sqlite", DATABASE_URL = "file:./dev.db")
-// Production:  Uses PostgreSQL (provider = "postgresql", DATABASE_URL from Vercel)
+// This schema uses PostgreSQL for BOTH development and production.
 //
-// Before deploying to production:
-// 1. Change provider to "postgresql" if using Vercel Postgres
-// 2. Set DATABASE_URL in Vercel environment variables
-// 3. After deployment, run: npx prisma db push
-// 4. Verify with: node scripts/verify-production.js
+// For LOCAL DEVELOPMENT:
+//   - If you have .env.production with PostgreSQL URL, it will use that
+//   - Otherwise, you can use a local PostgreSQL instance
 //
-// Current configuration: SQLite (Development)
+// For PRODUCTION (Vercel):
+//   - Uses Vercel Postgres (automatically configured)
+//   - DATABASE_URL is set in Vercel environment variables
+//
+// After deployment, run: npx prisma db push
+// Verify with: node scripts/verify-production.js
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"  // PostgreSQL for production, SQLite for local dev
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
