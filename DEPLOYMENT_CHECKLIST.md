@@ -16,7 +16,10 @@ Make sure these are set in Vercel Dashboard → Settings → Environment Variabl
 DATABASE_URL=postgresql://...  (Auto-added by Vercel Postgres)
 NEXTAUTH_SECRET=<generate with: openssl rand -base64 32>
 NEXTAUTH_URL=https://your-domain.vercel.app
+RESEND_API_KEY=re_...  (Required for password reset emails)
 ```
+
+**Note:** RESEND_API_KEY is REQUIRED for the build to succeed. Get your API key from [resend.com](https://resend.com)
 
 ### 3. Code Quality Checks
 - [x] **No hardcoded localhost URLs** (all use `process.env.NEXTAUTH_URL`)
@@ -70,7 +73,17 @@ In Vercel Dashboard → **Settings** → **Environment Variables**:
    https://onira.vercel.app  (or your custom domain)
    ```
 
-3. Make sure all variables are set for **Production** environment
+3. **RESEND_API_KEY** (⚠️ REQUIRED - Build will fail without this)
+   ```
+   re_gJExdYm6_Cgh2JuxrsrwwoFrydYkBSRwG  (your existing key from .env file)
+   ```
+
+   **Note:** This is required for password reset email functionality. Without it, the build will fail with:
+   ```
+   Error: RESEND_API_KEY is not defined in environment variables
+   ```
+
+4. Make sure all variables are set for **Production** environment
 
 ### Step 4: Redeploy Application
 
@@ -253,6 +266,8 @@ vercel --prod
 
 | Error | Cause | Solution |
 |-------|-------|----------|
+| **"RESEND_API_KEY is not defined"** | Missing env var | Add `RESEND_API_KEY` in Vercel Settings → Env Variables |
+| **Build fails at "Collecting page data"** | Missing RESEND_API_KEY | Add the API key, then redeploy |
 | **500 Internal Server Error** | Database not connected | Check `DATABASE_URL` is set in Vercel |
 | **"Table does not exist"** | Database not initialized | Run `npx prisma db push` |
 | **"Prisma Client not generated"** | Build failed | Check build logs, verify `postinstall` script exists |
