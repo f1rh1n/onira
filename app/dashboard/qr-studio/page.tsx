@@ -119,16 +119,128 @@ export default function QRStudioPage() {
     try {
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
-        scale: 2,
+        scale: 3, // Higher quality for mobile
+        useCORS: true,
       });
 
-      const link = document.createElement("a");
-      link.download = `${profile?.displayName || "profile"}-qr-card.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      // Convert to blob
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((b) => resolve(b!), "image/png", 1.0);
+      });
+
+      // Create file for sharing
+      const file = new File([blob], `${profile?.displayName || "profile"}-qr.png`, { type: "image/png" });
+
+      // Check if mobile
+      const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      // Try Web Share API first (for mobile)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: `${profile?.displayName || "Profile"} QR Code`,
+            text: 'Scan to view my profile!',
+          });
+          return;
+        } catch (shareError: any) {
+          // User cancelled or share failed
+          if (shareError.name === 'AbortError') {
+            return; // User cancelled, don't show fallback
+          }
+          console.error('Share error:', shareError);
+        }
+      }
+
+      // Fallback: Download the image
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${profile?.displayName || "profile"}-qr.png`;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+
+      // Show helpful message
+      if (isMobile) {
+        alert("✅ QR code saved to your device! Check your Downloads or Gallery.");
+      } else {
+        alert("✅ QR code downloaded!");
+      }
     } catch (error) {
       console.error("Error downloading QR card:", error);
       alert("Failed to download QR card. Please try again.");
+    }
+  };
+
+  const shareToInstagram = async () => {
+    if (!cardRef.current) return;
+
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: null,
+        scale: 3, // High quality for Instagram
+        useCORS: true,
+      });
+
+      // Convert to blob
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((b) => resolve(b!), "image/png", 1.0);
+      });
+
+      const file = new File([blob], `${profile?.displayName || "profile"}-qr.png`, { type: "image/png" });
+
+      // Check if mobile
+      const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      // Try Web Share API first
+      if (navigator.share && navigator.canShare) {
+        try {
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: `${profile?.displayName || "Profile"} QR Code`,
+              text: 'Scan to view my profile!',
+            });
+            return;
+          }
+        } catch (shareError: any) {
+          if (shareError.name !== 'AbortError') {
+            console.error('Share error:', shareError);
+          } else {
+            return; // User cancelled
+          }
+        }
+      }
+
+      // Fallback: Download and show instructions
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${profile?.displayName || "profile"}-qr-instagram.png`;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+
+      // Show helpful message
+      if (isMobile) {
+        alert('✅ Image saved! Check your Downloads or Gallery, then open Instagram Stories to share it.');
+      } else {
+        alert('✅ Image downloaded! Transfer it to your phone and share to Instagram Stories.');
+      }
+    } catch (error) {
+      console.error("Error sharing to Instagram:", error);
+      alert("Failed to share. Please try again.");
     }
   };
 
@@ -472,19 +584,31 @@ export default function QRStudioPage() {
                 </div>
               </div>
 
-              {/* Download Button */}
-              <button
-                onClick={downloadQRCard}
-                className="w-full bg-purple-600 text-white px-6 py-4 rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2 font-medium text-lg shadow-lg hover:shadow-xl"
-              >
-                <FiDownload size={20} />
-                Download QR Card
-              </button>
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Download Button */}
+                <button
+                  onClick={downloadQRCard}
+                  className="bg-purple-600 text-white px-6 py-4 rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl"
+                >
+                  <FiDownload size={20} />
+                  Download
+                </button>
+
+                {/* Instagram Share Button */}
+                <button
+                  onClick={shareToInstagram}
+                  className="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-4 rounded-lg hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 font-medium shadow-lg"
+                >
+                  <span className="text-xl">📸</span>
+                  Share to IG
+                </button>
+              </div>
 
               {/* Info */}
               <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
                 <p className="text-sm text-purple-900 dark:text-purple-300">
-                  💡 <strong>Tip:</strong> Print this on your business cards, flyers, or share it on social media!
+                  💡 <strong>Tip:</strong> Share to your Instagram Stories or print this on your business cards, flyers, and marketing materials!
                 </p>
               </div>
 
