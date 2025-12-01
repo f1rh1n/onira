@@ -31,8 +31,19 @@ export default function InstagramShareButton({
       // Get blob
       const blob = await response.blob();
 
+      // Convert blob to dataURL with proper MIME type
+      const reader = new FileReader();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      // Ensure blob has correct MIME type
+      const imageBlob = new Blob([blob], { type: "image/jpeg" });
+
       // Create File object with proper metadata for sharing
-      const file = new File([blob], "review.jpg", {
+      const file = new File([imageBlob], "review.jpg", {
         type: "image/jpeg",
         lastModified: Date.now(),
       });
@@ -54,25 +65,26 @@ export default function InstagramShareButton({
         }
       }
 
-      // Fallback: Download with instructions
-      const url = URL.createObjectURL(blob);
+      // Fallback: Use dataURL for download (ensures proper MIME type)
       const link = document.createElement('a');
-      link.href = url;
+      link.href = dataUrl;
       link.download = "review.jpg";
+      link.style.display = "none";
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
 
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      setTimeout(() => {
+        document.body.removeChild(link);
+      }, 100);
 
       // Show helpful instructions
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
         setTimeout(() => {
-          alert('📱 Image downloaded!\n\n1. Open your Photos/Gallery app\n2. Find "review.jpg"\n3. Tap Share button\n4. Select Instagram → Add to Story');
+          alert('📱 Image saved!\n\nOpen your Gallery app and you should find "review.jpg" there.\n\nTo share to Instagram:\n1. Open the image\n2. Tap Share\n3. Select Instagram Stories');
         }, 300);
       } else {
-        alert('💻 Image downloaded!\n\nTransfer to your phone and share to Instagram Stories from your Gallery app.');
+        alert('💻 Image downloaded! Transfer to your phone and share to Instagram Stories from your Gallery app.');
       }
 
     } catch (err) {

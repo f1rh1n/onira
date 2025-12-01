@@ -166,18 +166,23 @@ export default function QRStudioPage() {
         logging: false,
       });
 
-      // Convert to blob with high quality
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.95);
-      });
+      // Convert canvas to data URL (base64) with proper MIME type
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
 
-      // Create File object with proper metadata
-      const file = new File([blob], "qr-code.jpg", {
+      // Convert data URL to blob with explicit MIME type
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+
+      // Ensure blob has correct MIME type
+      const imageBlob = new Blob([blob], { type: "image/jpeg" });
+
+      // Create File with proper MIME type and extension
+      const file = new File([imageBlob], "qr-code.jpg", {
         type: "image/jpeg",
         lastModified: Date.now(),
       });
 
-      // Check if we can share files
+      // Try Web Share API first
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
@@ -194,25 +199,26 @@ export default function QRStudioPage() {
         }
       }
 
-      // Fallback: Download with instructions
-      const url = URL.createObjectURL(blob);
+      // Fallback: Use data URL for download (ensures proper MIME type)
       const link = document.createElement("a");
-      link.href = url;
+      link.href = dataUrl;
       link.download = "qr-code.jpg";
+      link.style.display = "none";
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
 
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      setTimeout(() => {
+        document.body.removeChild(link);
+      }, 100);
 
       // Show helpful instructions
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
         setTimeout(() => {
-          alert('📱 Image downloaded!\n\n1. Open your Photos/Gallery app\n2. Find "qr-code.jpg"\n3. Tap Share button\n4. Select Instagram → Add to Story');
+          alert('📱 Image saved!\n\nOpen your Gallery app and you should find "qr-code.jpg" there.\n\nTo share to Instagram:\n1. Open the image\n2. Tap Share\n3. Select Instagram Stories');
         }, 300);
       } else {
-        alert('💻 Image downloaded!\n\nTransfer to your phone and share to Instagram Stories from your Gallery app.');
+        alert('💻 Image downloaded! Transfer to your phone and share to Instagram Stories.');
       }
     } catch (error) {
       console.error("Error:", error);
