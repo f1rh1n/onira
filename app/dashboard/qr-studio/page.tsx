@@ -118,25 +118,26 @@ export default function QRStudioPage() {
 
     try {
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 3, // Higher quality for mobile
+        backgroundColor: "#ffffff",
+        scale: 3,
         useCORS: true,
+        allowTaint: true,
+        logging: false,
       });
 
-      // Convert to blob
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((b) => resolve(b!), "image/png", 1.0);
-      });
+      // Convert canvas to data URL (base64) with proper MIME type
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
 
-      // Create download link
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `qr-code-${Date.now()}.png`;
-      a.click();
+      // Use data URL for download (ensures proper MIME type)
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "qr-code.jpg";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
 
       setTimeout(() => {
-        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
       }, 100);
 
       // Check if mobile
@@ -144,7 +145,9 @@ export default function QRStudioPage() {
 
       // Show helpful message
       if (isMobile) {
-        alert("✅ QR code saved! Check your Downloads folder or Gallery app.");
+        setTimeout(() => {
+          alert('📱 QR code saved!\n\nOpen your Gallery app and you should find "qr-code.jpg" there.');
+        }, 300);
       } else {
         alert("✅ QR code downloaded!");
       }
