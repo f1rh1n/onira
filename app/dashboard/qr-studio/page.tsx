@@ -7,11 +7,11 @@ import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/components/Logo";
 import { QRCodeSVG } from "qrcode.react";
-import html2canvas from "html2canvas";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Avatar from "@/components/Avatar";
-import { FiDownload, FiRefreshCw } from "react-icons/fi";
+import { FiDownload } from "react-icons/fi";
 import { predefinedAvatars, getAvatarUrl } from "@/lib/avatars";
+import { shareQRCard, downloadQRCard } from "@/lib/image-share-helper";
 
 interface Profile {
   id: string;
@@ -113,42 +113,20 @@ export default function QRStudioPage() {
     loadAvatarDataUrl();
   }, [profile?.avatar]);
 
-  const downloadQRCard = async () => {
-    if (!cardRef.current) return;
-
+  const handleDownloadQRCard = async () => {
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: "#ffffff",
-        scale: 3,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
+      await downloadQRCard({
+        profileUrl,
+        username: profile?.displayName || 'User',
+        businessName: profile?.businessName,
+        avatarUrl: avatarDataUrl,
+        template: template as any,
+        fgColor,
+        bgColor,
       });
 
-      // Convert canvas to data URL (base64) with proper MIME type
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
-
-      // Use data URL for download (ensures proper MIME type)
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = "qr-code.jpg";
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-
-      setTimeout(() => {
-        document.body.removeChild(link);
-      }, 100);
-
-      // Check if mobile
       const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      // Show helpful message
-      if (isMobile) {
-        setTimeout(() => {
-          alert('📱 QR code saved!\n\nOpen your Gallery app and you should find "qr-code.jpg" there.');
-        }, 300);
-      } else {
+      if (!isMobile) {
         alert("✅ QR code downloaded!");
       }
     } catch (error) {
@@ -157,75 +135,20 @@ export default function QRStudioPage() {
     }
   };
 
-  const shareToInstagram = async () => {
-    if (!cardRef.current) return;
-
+  const handleShareToInstagram = async () => {
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: "#ffffff",
-        scale: 3,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
+      await shareQRCard({
+        profileUrl,
+        username: profile?.displayName || 'User',
+        businessName: profile?.businessName,
+        avatarUrl: avatarDataUrl,
+        template: template as any,
+        fgColor,
+        bgColor,
       });
-
-      // Convert canvas to data URL (base64) with proper MIME type
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
-
-      // Convert data URL to blob with explicit MIME type
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-
-      // Ensure blob has correct MIME type
-      const imageBlob = new Blob([blob], { type: "image/jpeg" });
-
-      // Create File with proper MIME type and extension
-      const file = new File([imageBlob], "qr-code.jpg", {
-        type: "image/jpeg",
-        lastModified: Date.now(),
-      });
-
-      // Try Web Share API first
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: "My QR Code",
-            text: "Scan to view my profile",
-          });
-          return; // Successfully shared
-        } catch (err: any) {
-          if (err.name === 'AbortError') {
-            return; // User cancelled
-          }
-          console.error("Share failed:", err);
-        }
-      }
-
-      // Fallback: Use data URL for download (ensures proper MIME type)
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = "qr-code.jpg";
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-
-      setTimeout(() => {
-        document.body.removeChild(link);
-      }, 100);
-
-      // Show helpful instructions
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        setTimeout(() => {
-          alert('📱 Image saved!\n\nOpen your Gallery app and you should find "qr-code.jpg" there.\n\nTo share to Instagram:\n1. Open the image\n2. Tap Share\n3. Select Instagram Stories');
-        }, 300);
-      } else {
-        alert('💻 Image downloaded! Transfer to your phone and share to Instagram Stories.');
-      }
     } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to create image. Please try again.");
+      console.error("Error sharing QR card:", error);
+      alert("Failed to share QR card. Please try again.");
     }
   };
 
@@ -573,7 +496,7 @@ export default function QRStudioPage() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Download Button */}
                 <button
-                  onClick={downloadQRCard}
+                  onClick={handleDownloadQRCard}
                   className="bg-purple-600 text-white px-6 py-4 rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl"
                 >
                   <FiDownload size={20} />
@@ -582,7 +505,7 @@ export default function QRStudioPage() {
 
                 {/* Instagram Share Button */}
                 <button
-                  onClick={shareToInstagram}
+                  onClick={handleShareToInstagram}
                   className="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-4 rounded-lg hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 font-medium shadow-lg"
                 >
                   <span className="text-xl">📸</span>
