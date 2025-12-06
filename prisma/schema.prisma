@@ -64,11 +64,14 @@ model Review {
   profile       Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
   reviewerName  String    // Anonymous name chosen by reviewer
   reviewerAvatar String?  // Avatar ID chosen by reviewer
+  reviewerIp    String?   // IP address for spam prevention (hashed)
   rating        Int       // 1-5 stars
   comment       String
   isPublished   Boolean   @default(false) // Only profile owner can publish
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  @@index([profileId, reviewerIp, createdAt]) // For cooldown check
 }
 
 model Post {

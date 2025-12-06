@@ -53,7 +53,9 @@
       "Bash(./push-db.bat)",
       "Bash(node scripts/verify-production.js:*)",
       "Bash(./verify-db.bat)",
-      "Bash(del push-db.bat verify-db.bat)"
+      "Bash(del push-db.bat verify-db.bat)",
+      "Bash(npm:*)",
+      "Bash(aws ec2 describe-instances:*)"
     ],
     "deny": [],
     "ask": []

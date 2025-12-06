@@ -6,9 +6,10 @@ import { predefinedAvatars, getAvatarUrl } from "@/lib/avatars";
 
 interface ReviewFormProps {
   profileId: string;
+  username: string;
 }
 
-export default function ReviewForm({ profileId }: ReviewFormProps) {
+export default function ReviewForm({ profileId, username }: ReviewFormProps) {
   const [formData, setFormData] = useState({
     reviewerName: "",
     rating: 5,
@@ -65,9 +66,8 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
   };
 
   return (
-    <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-      <h3 className="text-xl font-bold mb-4 text-white">Leave a Review</h3>
-      <p className="text-sm text-gray-400 mb-4">
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 sm:p-6">
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
         Share your experience anonymously. Choose an avatar and any name you like!
       </p>
 
@@ -85,10 +85,10 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">
             Choose Your Avatar
           </label>
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
             {predefinedAvatars.slice(0, 12).map((avatar) => (
               <motion.button
                 key={avatar.id}
@@ -100,7 +100,7 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
                   relative w-full aspect-square rounded-full overflow-hidden border-2 transition
                   ${formData.reviewerAvatar === avatar.id
                     ? 'border-purple-500 ring-2 ring-purple-500/30'
-                    : 'border-gray-700 hover:border-purple-500/50'
+                    : 'border-gray-300 dark:border-gray-700 hover:border-purple-500/50'
                   }
                 `}
               >
@@ -115,7 +115,7 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
         </div>
 
         <div>
-          <label htmlFor="reviewerName" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="reviewerName" className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
             Your Name (can be anything!)
           </label>
           <input
@@ -123,20 +123,20 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
             type="text"
             required
             maxLength={50}
-            className="w-full px-3 py-2 bg-[#0a0a0a] border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-3 py-2 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             value={formData.reviewerName}
             onChange={(e) =>
               setFormData({ ...formData, reviewerName: e.target.value })
             }
             placeholder="e.g., Happy Customer, Alice, etc."
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             No account needed. Choose any name!
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">
             Rating
           </label>
           <div className="flex gap-2">
@@ -158,38 +158,38 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
                 }
                 className="text-3xl cursor-pointer"
               >
-                <span className={star <= formData.rating ? "text-yellow-400" : "text-gray-600"}>
+                <span className={star <= formData.rating ? "text-yellow-400" : "text-gray-400 dark:text-gray-600"}>
                   {star <= formData.rating ? "⭐" : "☆"}
                 </span>
               </motion.button>
             ))}
           </div>
-          <p className="text-xs text-gray-500 mt-2">
-            {formData.rating === 5 && "🎉 Excellent!"}
-            {formData.rating === 4 && "😊 Great!"}
-            {formData.rating === 3 && "👍 Good"}
-            {formData.rating === 2 && "😐 Okay"}
-            {formData.rating === 1 && "😕 Poor"}
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+            {formData.rating === 5 && "Excellent!"}
+            {formData.rating === 4 && "Great!"}
+            {formData.rating === 3 && "Good"}
+            {formData.rating === 2 && "Okay"}
+            {formData.rating === 1 && "Poor"}
           </p>
         </div>
 
         <div>
-          <label htmlFor="comment" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="comment" className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
             Your Review
           </label>
           <textarea
             id="comment"
             required
-            rows={4}
+            rows={3}
             maxLength={500}
-            className="w-full px-3 py-2 bg-[#0a0a0a] border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-3 py-2 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             value={formData.comment}
             onChange={(e) =>
               setFormData({ ...formData, comment: e.target.value })
             }
             placeholder="Share your experience..."
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {formData.comment.length}/500 characters
           </p>
         </div>
@@ -197,23 +197,11 @@ export default function ReviewForm({ profileId }: ReviewFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 disabled:opacity-50 transition"
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2.5 rounded-lg hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 transition font-medium"
         >
           {loading ? "Submitting..." : "Submit Review"}
         </button>
       </form>
-
-      {/* Van Gogh Clipart */}
-      <div className="mt-6 flex items-center justify-center gap-3 opacity-70">
-        <img
-          src="/van-gogh.jpg"
-          alt="Van Gogh"
-          className="w-12 h-12 rounded-full border-2 border-purple-500/30 object-cover grayscale hover:grayscale-0 transition-all duration-300"
-        />
-        <p className="text-xs text-gray-500 italic">
-          &quot;Art is to console those who are broken by life&quot; - Van Gogh
-        </p>
-      </div>
     </div>
   );
 }

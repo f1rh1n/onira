@@ -133,28 +133,27 @@ export default function DashboardPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-between"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
             >
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   Welcome back, {profile.displayName}!
                 </h1>
-<p className="text-gray-600 dark:text-gray-400">
-  Here&apos;s what&apos;s happening with your profile today
-</p>
-
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                  Here&apos;s what&apos;s happening with your profile today
+                </p>
               </div>
               <Link
                 href={`/${(session?.user as any)?.username}`}
                 target="_blank"
-                className="bg-gray-100 dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-800 text-purple-600 dark:text-purple-400 px-6 py-3 rounded-lg hover:border-purple-500/50 transition font-medium"
+                className="w-full sm:w-auto text-center bg-gray-100 dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-800 text-purple-600 dark:text-purple-400 px-6 py-3 rounded-lg hover:border-purple-500/50 transition font-medium"
               >
                 View Public Profile
               </Link>
             </motion.div>
 
             {/* Stats Grid */}
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <StatsCard
                 title="Total Reviews"
                 value={profile._count?.reviews || 0}

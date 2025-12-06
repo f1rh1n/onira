@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "./components/ThemeToggle";
+import Logo from "@/components/Logo";
+import { HiLink, HiChatBubbleLeftRight, HiSparkles } from "react-icons/hi2";
 
 export default function Home() {
   // Random background image
@@ -23,20 +25,16 @@ export default function Home() {
         backgroundAttachment: 'fixed'
       }}
     >
-      {/* Dark overlay for better contrast */}
-      <div className="absolute inset-0 bg-black/40 dark:bg-black/60"></div>
+      {/* Dark overlay for better contrast - reduced opacity */}
+      <div className="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
 
       {/* Content wrapper */}
       <div className="relative z-10 min-h-screen flex flex-col">
       {/* Header */}
       <header className="glass-nav sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="transition-transform hover:scale-105 text-3xl font-bold tracking-wider">
-            <span className="text-purple-600">O</span>
-            <span className="text-purple-600">N</span>
-            <span className="text-blue-500">I</span>
-            <span className="text-purple-600">R</span>
-            <span className="text-purple-600">A</span>
+          <Link href="/" className="transition-transform hover:scale-105">
+            <Logo />
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-foreground/80 hover:text-foreground transition">
@@ -53,28 +51,28 @@ export default function Home() {
         </nav>
       </header>
 
-      {/* Hero Section */}
-      <main className="flex-1 flex items-center justify-center">
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h2 className="text-5xl md:text-6xl font-heading mb-6 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+      {/* Hero Section - Reduced height for better mobile experience */}
+      <main className="flex items-center justify-center py-20 md:py-32 lg:py-40">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-heading mb-4 md:mb-6 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
             Get Anonymous Reviews
             <br />
             For Your Business
           </h2>
-          <p className="text-xl font-body-bold text-white/90 mb-8 max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+          <p className="text-lg sm:text-xl font-body-bold text-white/90 mb-8 max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
             Let your customers share honest feedback anonymously.
             Build trust and showcase authentic reviews on your profile.
           </p>
-          <div className="flex gap-4 justify-center flex-wrap">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-md sm:max-w-none mx-auto px-4 sm:px-0">
             <Link
               href="/register"
-              className="bg-gradient-purple-pink text-white px-8 py-3 rounded-full text-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 inline-block"
+              className="w-full sm:w-auto bg-gradient-purple-pink text-white px-8 py-3.5 rounded-full text-lg font-semibold hover:shadow-2xl transition-all duration-300 hover:scale-105 inline-block"
             >
               Get Started
             </Link>
             <Link
               href="#features"
-              className="glass border-2 border-primary-400 text-primary-600 dark:text-primary-400 px-8 py-3 rounded-full text-lg hover:shadow-xl transition-all duration-300 hover:scale-105 inline-block"
+              className="w-full sm:w-auto glass border-2 border-white/30 text-white px-8 py-3.5 rounded-full text-lg font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105 inline-block"
             >
               Learn More
             </Link>
@@ -82,31 +80,37 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Features Section */}
-      <section id="features" className="py-16 bg-black/30 backdrop-blur-sm">
+      {/* Features Section - Cleaner with icons instead of emoji */}
+      <section id="features" className="section-padding bg-black/20">
         <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-heading text-center mb-12 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">How It Works</h3>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="glass-card p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-white/90 dark:bg-gray-900/90">
-              <div className="text-4xl mb-4">🔗</div>
-              <h4 className="text-xl font-serif-elegant mb-2 text-foreground">Share Your Link</h4>
-              <p className="font-body-bold text-foreground/80">
+          <h3 className="text-2xl sm:text-3xl font-heading text-center mb-8 md:mb-12 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">How It Works</h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
+            <div className="card-padding card-shadow-lg bg-white/95 dark:bg-gray-900/95 rounded-2xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4">
+                <HiLink className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-foreground">Share Your Link</h4>
+              <p className="text-sm sm:text-base text-foreground/70 leading-relaxed">
                 Get your unique review link and share it with customers.
                 Perfect for businesses, services, and professionals.
               </p>
             </div>
-            <div className="glass-card p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-white/90 dark:bg-gray-900/90">
-              <div className="text-4xl mb-4">💬</div>
-              <h4 className="text-xl font-serif-elegant mb-2 text-foreground">Collect Anonymous Feedback</h4>
-              <p className="font-body-bold text-foreground/80">
+            <div className="card-padding card-shadow-lg bg-white/95 dark:bg-gray-900/95 rounded-2xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mb-4">
+                <HiChatBubbleLeftRight className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-foreground">Collect Anonymous Feedback</h4>
+              <p className="text-sm sm:text-base text-foreground/70 leading-relaxed">
                 Customers leave honest reviews without creating accounts.
                 They choose any name they want - completely anonymous.
               </p>
             </div>
-            <div className="glass-card p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-white/90 dark:bg-gray-900/90">
-              <div className="text-4xl mb-4">✨</div>
-              <h4 className="text-xl font-serif-elegant mb-2 text-foreground">Publish & Share</h4>
-              <p className="font-body-bold text-foreground/80">
+            <div className="card-padding card-shadow-lg bg-white/95 dark:bg-gray-900/95 rounded-2xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 sm:col-span-2 lg:col-span-1">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-orange-500 rounded-xl flex items-center justify-center mb-4">
+                <HiSparkles className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="text-lg sm:text-xl font-bold mb-2 text-foreground">Publish & Share</h4>
+              <p className="text-sm sm:text-base text-foreground/70 leading-relaxed">
                 Display reviews on your public page and share the best ones
                 directly to your Instagram stories.
               </p>

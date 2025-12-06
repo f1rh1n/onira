@@ -28,6 +28,10 @@ export default function ProfileEditPage() {
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -59,6 +63,10 @@ export default function ProfileEditPage() {
             isPublished: data.profile.isPublished !== undefined ? data.profile.isPublished : true,
           });
           setAvatar(data.profile.avatar);
+          setProfileImage(data.profile.profileImage || null);
+          setCoverImage(data.profile.coverImage || null);
+          setProfileImagePreview(data.profile.profileImage || null);
+          setCoverImagePreview(data.profile.coverImage || null);
         }
       }
     } catch (error) {
@@ -66,6 +74,42 @@ export default function ProfileEditPage() {
     } finally {
       setFetchLoading(false);
     }
+  };
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setProfileImage(base64String);
+        setProfileImagePreview(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setCoverImage(base64String);
+        setCoverImagePreview(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeProfileImage = () => {
+    setProfileImage(null);
+    setProfileImagePreview(null);
+  };
+
+  const removeCoverImage = () => {
+    setCoverImage(null);
+    setCoverImagePreview(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,7 +123,12 @@ export default function ProfileEditPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...formData, avatar }),
+        body: JSON.stringify({
+          ...formData,
+          avatar,
+          profileImage,
+          coverImage
+        }),
       });
 
       const data = await response.json();
@@ -139,10 +188,104 @@ export default function ProfileEditPage() {
               </div>
             )}
 
-            <AvatarPicker
-              selectedAvatar={avatar}
-              onSelect={(avatarId) => setAvatar(avatarId)}
-            />
+            {/* Cover Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Cover Image
+              </label>
+              <div className="space-y-3">
+                {coverImagePreview ? (
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500">
+                    <Image
+                      src={coverImagePreview}
+                      alt="Cover preview"
+                      fill
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeCoverImage}
+                      className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-full h-48 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">No cover image</span>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverImageChange}
+                  className="block w-full text-sm text-gray-900 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 file:cursor-pointer"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Recommended: 1200x400px. This will appear as a banner behind your profile picture.
+                </p>
+              </div>
+            </div>
+
+            {/* Profile Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Profile Picture (Custom Photo)
+              </label>
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  {profileImagePreview ? (
+                    <div className="relative">
+                      <Image
+                        src={profileImagePreview}
+                        alt="Profile preview"
+                        width={120}
+                        height={120}
+                        className="rounded-full object-cover w-28 h-28 ring-4 ring-purple-500/20"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeProfileImage}
+                        className="absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white w-7 h-7 rounded-full text-xs font-bold transition"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : avatar ? (
+                    <Avatar avatarId={avatar} size={112} className="ring-4 ring-purple-500/20 rounded-full" />
+                  ) : (
+                    <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-3xl font-bold">
+                      ?
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfileImageChange}
+                      className="block w-full text-sm text-gray-900 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 file:cursor-pointer"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      Upload a custom photo or choose an avatar below. Custom photo takes priority.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Avatar Picker (fallback if no custom profile image) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Or Choose an Avatar
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                This will be used if you don&apos;t upload a custom profile picture.
+              </p>
+              <AvatarPicker
+                selectedAvatar={avatar}
+                onSelect={(avatarId) => setAvatar(avatarId)}
+              />
+            </div>
 
             <div>
               <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

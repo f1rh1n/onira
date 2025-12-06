@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+
+# Next.js build output
+.next
+out
+
+# Git
+.git
+.gitignore
+
+# Environment variables
+.env*
+!.env.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Development database
+dev.db
+dev.db-journal
+*.db
+*.db-journal
+
+# Documentation (except deployment checklist)
+*.md
+!DEPLOYMENT_CHECKLIST.md
+
+# Claude Code
+.claude
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+.vercel

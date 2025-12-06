@@ -22,6 +22,8 @@ export async function POST(request: Request) {
       website,
       instagram,
       avatar,
+      profileImage,
+      coverImage,
     } = body;
 
     if (!displayName) {
@@ -58,6 +60,8 @@ export async function POST(request: Request) {
         website: website || null,
         instagram: instagram || null,
         avatar: avatar || null,
+        profileImage: profileImage || null,
+        coverImage: coverImage || null,
         isPublished: true,
       },
     });
@@ -92,6 +96,8 @@ export async function PUT(request: Request) {
       instagram,
       isPublished,
       avatar,
+      profileImage,
+      coverImage,
     } = body;
 
     // Update profile
@@ -110,6 +116,8 @@ export async function PUT(request: Request) {
         instagram: instagram || null,
         isPublished: isPublished !== undefined ? isPublished : true,
         avatar: avatar || null,
+        profileImage: profileImage !== undefined ? profileImage : undefined,
+        coverImage: coverImage !== undefined ? coverImage : undefined,
       },
     });
 

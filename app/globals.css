@@ -56,34 +56,86 @@ body {
     text-wrap: balance;
   }
 
-  /* iOS-style Glass Effect */
+  /* Improved Glass Effects - Reduced blur for better performance and cleaner look */
   .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px var(--shadow);
+    box-shadow: 0 4px 20px var(--shadow);
   }
 
   .glass-card {
     background: var(--card-bg);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
     border: 1px solid var(--border);
-    box-shadow: 0 4px 24px var(--shadow);
+    box-shadow: 0 2px 16px var(--shadow);
     border-radius: 16px;
   }
 
   .glass-nav {
     background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
     border-bottom: 1px solid rgba(203, 213, 225, 0.3);
   }
 
   .dark .glass-nav {
     background: rgba(15, 23, 42, 0.8);
     border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+  }
+
+  /* Content backgrounds - neutral and clean */
+  .bg-content-light {
+    background-color: #ffffff;
+  }
+
+  .bg-content-dark {
+    background-color: #0a0a0a;
+  }
+
+  /* Modern card shadow */
+  .card-shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-shadow-lg {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Consistent spacing utilities */
+  .section-padding {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  @media (min-width: 768px) {
+    .section-padding {
+      padding-top: 4rem;
+      padding-bottom: 4rem;
+    }
+  }
+
+  .card-padding {
+    padding: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .card-padding {
+      padding: 1.5rem;
+    }
+  }
+
+  /* Improved focus states */
+  .focus-ring {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  .focus-ring:focus {
+    outline: 2px solid #a855f7;
+    outline-offset: 2px;
   }
 }
 
