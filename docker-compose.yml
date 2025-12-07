@@ -9,34 +9,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL:-postgresql://onira:onira_password@postgres:5432/onira_db}
+      - DATABASE_URL=${DATABASE_URL}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - RESEND_API_KEY=${RESEND_API_KEY}
-    depends_on:
-      - postgres
     restart: unless-stopped
-    networks:
-      - onira-network
-
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      - POSTGRES_USER=onira
-      - POSTGRES_PASSWORD=onira_password
-      - POSTGRES_DB=onira_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-    networks:
-      - onira-network
-
-volumes:
-  postgres_data:
-    driver: local
-
-networks:
-  onira-network:
-    driver: bridge

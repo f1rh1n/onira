@@ -1,0 +1,298 @@
+name: Deploy ONIRA to EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip health checks'
+        required: false
+        default: 'false'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          build-args: |
+            BUILDTIME=${{ github.event.head_commit.timestamp }}
+            VERSION=${{ github.sha }}
+
+      - name: Output image details
+        run: |
+          echo "Image pushed successfully!"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Digest: ${{ steps.build.outputs.digest }}"
+
+  deploy-to-ec2:
+    name: Deploy to EC2
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: http://${{ secrets.EC2_HOST }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create deployment script
+        run: |
+          cat > deploy.sh << 'DEPLOY_SCRIPT_EOF'
+          #!/bin/bash
+          set -e
+
+          echo "=========================================="
+          echo "ONIRA Deployment Script"
+          echo "=========================================="
+          echo "Timestamp: $(date)"
+          echo "Image: $DOCKER_IMAGE"
+          echo ""
+
+          # Login to GitHub Container Registry
+          echo "Logging in to GitHub Container Registry..."
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+          # Pull the latest image
+          echo "Pulling Docker image..."
+          docker pull "$DOCKER_IMAGE"
+
+          # Stop and remove old container
+          echo "Stopping old container..."
+          docker stop onira-app 2>/dev/null || true
+          docker rm onira-app 2>/dev/null || true
+
+          # Start new container
+          echo "Starting new container..."
+          docker run -d \
+            --name onira-app \
+            --restart unless-stopped \
+            -p 80:3000 \
+            -e NODE_ENV=production \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e NEXTAUTH_SECRET="$NEXTAUTH_SECRET" \
+            -e NEXTAUTH_URL="$NEXTAUTH_URL" \
+            -e RESEND_API_KEY="$RESEND_API_KEY" \
+            "$DOCKER_IMAGE"
+
+          # Wait for container to start
+          echo "Waiting for container to start..."
+          sleep 10
+
+          # Check container status
+          echo ""
+          echo "Container status:"
+          docker ps | grep onira-app || (echo "ERROR: Container not running!" && exit 1)
+
+          # Health check
+          echo ""
+          echo "Performing health check..."
+          HEALTH_CHECK_RETRIES=12
+          HEALTH_CHECK_INTERVAL=5
+
+          for i in $(seq 1 $HEALTH_CHECK_RETRIES); do
+            echo "Health check attempt $i/$HEALTH_CHECK_RETRIES..."
+            if curl -f -s http://localhost/api/health > /dev/null 2>&1; then
+              echo "✓ Health check passed!"
+              curl -s http://localhost/api/health | jq '.' || curl -s http://localhost/api/health
+              echo ""
+              echo "=========================================="
+              echo "✓ Deployment completed successfully!"
+              echo "=========================================="
+              exit 0
+            fi
+            sleep $HEALTH_CHECK_INTERVAL
+          done
+
+          echo "ERROR: Health check failed after $HEALTH_CHECK_RETRIES attempts"
+          echo "Container logs:"
+          docker logs onira-app --tail 50
+          exit 1
+          DEPLOY_SCRIPT_EOF
+
+          chmod +x deploy.sh
+
+      - name: Copy deployment script to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "deploy.sh"
+          target: "/home/${{ secrets.EC2_USERNAME }}"
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          DOCKER_IMAGE: ${{ needs.build-and-push.outputs.image_tag }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DOCKER_IMAGE,GITHUB_TOKEN,GITHUB_ACTOR,DATABASE_URL,NEXTAUTH_SECRET,NEXTAUTH_URL,RESEND_API_KEY
+          script: |
+            chmod +x /home/${{ secrets.EC2_USERNAME }}/deploy.sh
+            /home/${{ secrets.EC2_USERNAME }}/deploy.sh
+
+      - name: Cleanup old Docker images
+        uses: appleboy/ssh-action@v1.0.3
+        if: success()
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Cleaning up old Docker images..."
+            docker image prune -af --filter "until=24h" || true
+            echo "Cleanup completed"
+
+      - name: Rollback on failure
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Deployment failed! Attempting rollback..."
+
+            # Get the previous image (second in the list)
+            PREVIOUS_IMAGE=$(docker images ghcr.io/${{ github.repository }} --format "{{.Repository}}:{{.Tag}}" | sed -n 2p)
+
+            if [ -z "$PREVIOUS_IMAGE" ]; then
+              echo "No previous image found for rollback"
+              exit 1
+            fi
+
+            echo "Rolling back to: $PREVIOUS_IMAGE"
+
+            docker stop onira-app 2>/dev/null || true
+            docker rm onira-app 2>/dev/null || true
+
+            docker run -d \
+              --name onira-app \
+              --restart unless-stopped \
+              -p 80:3000 \
+              -e NODE_ENV=production \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+              -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
+              -e RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}" \
+              "$PREVIOUS_IMAGE"
+
+            sleep 10
+
+            if curl -f http://localhost/api/health > /dev/null 2>&1; then
+              echo "Rollback successful!"
+            else
+              echo "Rollback failed - manual intervention required"
+              exit 1
+            fi
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "::notice::Deployment to EC2 completed successfully! Access your app at http://${{ secrets.EC2_HOST }}"
+          else
+            echo "::error::Deployment to EC2 failed! Check logs for details."
+          fi
+
+  post-deployment-verification:
+    name: Post-Deployment Verification
+    needs: deploy-to-ec2
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Wait for application stabilization
+        run: sleep 15
+
+      - name: Verify application health
+        run: |
+          echo "Verifying application health..."
+
+          RESPONSE=$(curl -f -s http://${{ secrets.EC2_HOST }}/api/health || echo "FAILED")
+
+          if [ "$RESPONSE" == "FAILED" ]; then
+            echo "::error::Health check failed from GitHub Actions runner"
+            exit 1
+          fi
+
+          echo "Health check response:"
+          echo "$RESPONSE" | jq '.' || echo "$RESPONSE"
+
+          # Check if status is healthy
+          STATUS=$(echo "$RESPONSE" | jq -r '.status' 2>/dev/null || echo "unknown")
+
+          if [ "$STATUS" != "healthy" ]; then
+            echo "::error::Application status is not healthy: $STATUS"
+            exit 1
+          fi
+
+          echo "::notice::Application is healthy and responding correctly!"
+
+      - name: Test homepage
+        run: |
+          echo "Testing homepage..."
+          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" http://${{ secrets.EC2_HOST }}/)
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "::notice::Homepage is accessible (HTTP $HTTP_CODE)"
+          else
+            echo "::warning::Homepage returned HTTP $HTTP_CODE"
+          fi

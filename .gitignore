@@ -48,3 +48,8 @@ prisma/dev.db-journal
 # temp files
 nul
 *.tar
+
+# deployment scripts (contain sensitive info)
+fix-ec2-deployment.sh
+deploy-to-ec2.sh
+deploy.sh
