@@ -158,17 +158,18 @@ jobs:
 
           chmod +x deploy.sh
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
       - name: Copy deployment script to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "deploy.sh"
-          target: "/home/${{ secrets.EC2_USERNAME }}"
+        run: |
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no deploy.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/
 
       - name: Deploy on EC2
-        uses: appleboy/ssh-action@v1.0.3
         env:
           DOCKER_IMAGE: ${{ needs.build-and-push.outputs.image_tag }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -177,39 +178,50 @@ jobs:
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DOCKER_IMAGE,GITHUB_TOKEN,GITHUB_ACTOR,DATABASE_URL,NEXTAUTH_SECRET,NEXTAUTH_URL,RESEND_API_KEY
-          script: |
-            chmod +x /home/${{ secrets.EC2_USERNAME }}/deploy.sh
-            /home/${{ secrets.EC2_USERNAME }}/deploy.sh
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'ENDSSH'
+            export DOCKER_IMAGE="${DOCKER_IMAGE}"
+            export GITHUB_TOKEN="${GITHUB_TOKEN}"
+            export GITHUB_ACTOR="${GITHUB_ACTOR}"
+            export DATABASE_URL="${DATABASE_URL}"
+            export NEXTAUTH_SECRET="${NEXTAUTH_SECRET}"
+            export NEXTAUTH_URL="${NEXTAUTH_URL}"
+            export RESEND_API_KEY="${RESEND_API_KEY}"
+
+            chmod +x /home/${EC2_USERNAME}/deploy.sh
+            /home/${EC2_USERNAME}/deploy.sh
+          ENDSSH
 
       - name: Cleanup old Docker images
-        uses: appleboy/ssh-action@v1.0.3
         if: success()
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'ENDSSH'
             echo "Cleaning up old Docker images..."
             docker image prune -af --filter "until=24h" || true
             echo "Cleanup completed"
+          ENDSSH
 
       - name: Rollback on failure
         if: failure()
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'ENDSSH'
             echo "Deployment failed! Attempting rollback..."
 
             # Get the previous image (second in the list)
-            PREVIOUS_IMAGE=$(docker images ghcr.io/${{ github.repository }} --format "{{.Repository}}:{{.Tag}}" | sed -n 2p)
+            PREVIOUS_IMAGE=$(docker images ghcr.io/${GITHUB_REPO} --format "{{.Repository}}:{{.Tag}}" | sed -n 2p)
 
             if [ -z "$PREVIOUS_IMAGE" ]; then
               echo "No previous image found for rollback"
@@ -226,10 +238,10 @@ jobs:
               --restart unless-stopped \
               -p 80:3000 \
               -e NODE_ENV=production \
-              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-              -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
-              -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
-              -e RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}" \
+              -e DATABASE_URL="${DATABASE_URL}" \
+              -e NEXTAUTH_SECRET="${NEXTAUTH_SECRET}" \
+              -e NEXTAUTH_URL="${NEXTAUTH_URL}" \
+              -e RESEND_API_KEY="${RESEND_API_KEY}" \
               "$PREVIOUS_IMAGE"
 
             sleep 10
@@ -240,6 +252,7 @@ jobs:
               echo "Rollback failed - manual intervention required"
               exit 1
             fi
+          ENDSSH
 
       - name: Notify deployment status
         if: always()
