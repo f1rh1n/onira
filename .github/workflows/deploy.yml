@@ -174,7 +174,6 @@ jobs:
 
       - name: Deploy on EC2
         env:
-          DOCKER_IMAGE: ${{ needs.build-and-push.outputs.image_tag }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -183,7 +182,11 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+          IMAGE_REGISTRY: ${{ env.REGISTRY }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
         run: |
+          # Use latest tag for deployment
+          DOCKER_IMAGE="${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${EC2_USERNAME}@${EC2_HOST} \
             "export DOCKER_IMAGE='${DOCKER_IMAGE}' && \
              export GITHUB_TOKEN='${GITHUB_TOKEN}' && \
