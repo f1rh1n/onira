@@ -6,6 +6,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import ThemeToggle from "../components/ThemeToggle";
+import Logo from "@/components/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -108,12 +109,8 @@ export default function RegisterPage() {
       </div>
       <div className="max-w-md w-full space-y-8 p-8 glass-card m-4 relative z-10 bg-white/95 dark:bg-gray-900/95">
         <div>
-          <Link href="/" className="inline-block mb-4 transition-transform hover:scale-105 text-4xl font-bold tracking-wider">
-            <span className="text-purple-600">O</span>
-            <span className="text-purple-600">N</span>
-            <span className="text-blue-500">I</span>
-            <span className="text-purple-600">R</span>
-            <span className="text-purple-600">A</span>
+          <Link href="/" className="inline-block mb-4 transition-transform hover:scale-105">
+            <Logo size="text-4xl" />
           </Link>
           <h2 className="mt-6 text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent">
             Create your account
@@ -208,7 +205,7 @@ export default function RegisterPage() {
           <div className="text-center">
             <p className="text-sm text-foreground/70">
               Already have an account?{" "}
-              <Link href="/register" className="text-primary-600 dark:text-primary-400 hover:text-secondary-500 dark:hover:text-secondary-400 transition font-medium">
+              <Link href="/login" className="text-primary-600 dark:text-primary-400 hover:text-secondary-500 dark:hover:text-secondary-400 transition font-medium">
                 Sign in
               </Link>
             </p>
