@@ -362,9 +362,10 @@ export default function ProfileEditPage() {
                   type="tel"
                   className="w-full px-3 py-2 bg-white dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
                   value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9+]/g, '');
+                    setFormData({ ...formData, phone: value });
+                  }}
                   placeholder="+1234567890"
                 />
               </div>

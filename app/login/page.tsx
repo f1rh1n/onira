@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "../components/ThemeToggle";
+import Logo from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -69,12 +70,8 @@ export default function LoginPage() {
       </div>
       <div className="max-w-md w-full space-y-8 p-8 glass-card m-4 relative z-10 bg-white/95 dark:bg-gray-900/95">
         <div>
-          <Link href="/" className="inline-block mb-4 transition-transform hover:scale-105 text-4xl font-bold tracking-wider">
-            <span className="text-purple-600">O</span>
-            <span className="text-purple-600">N</span>
-            <span className="text-blue-500">I</span>
-            <span className="text-purple-600">R</span>
-            <span className="text-purple-600">A</span>
+          <Link href="/" className="inline-block mb-4 transition-transform hover:scale-105">
+            <Logo size="text-4xl" />
           </Link>
           <h2 className="mt-6 text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent">
             Sign in to your account

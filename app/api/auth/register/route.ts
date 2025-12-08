@@ -2,6 +2,28 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+// Email validation function
+function isValidEmail(email: string): boolean {
+  // Basic email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return false;
+  }
+
+  // Check for common disposable email domains
+  const disposableDomains = [
+    'tempmail.com', 'guerrillamail.com', 'mailinator.com',
+    '10minutemail.com', 'throwaway.email', 'trashmail.com'
+  ];
+
+  const domain = email.split('@')[1].toLowerCase();
+  if (disposableDomains.includes(domain)) {
+    return false;
+  }
+
+  return true;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -10,6 +32,14 @@ export async function POST(request: Request) {
     if (!email || !password || !username) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        { error: "Please enter a valid email address" },
         { status: 400 }
       );
     }

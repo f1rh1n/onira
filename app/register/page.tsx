@@ -23,6 +23,13 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     // Validation
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
