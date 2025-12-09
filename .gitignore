@@ -53,3 +53,8 @@ nul
 fix-ec2-deployment.sh
 deploy-to-ec2.sh
 deploy.sh
+
+# monitoring dashboard (not for deployment)
+app/admin/monitoring/
+app/api/admin/metrics/
+MONITORING.md
