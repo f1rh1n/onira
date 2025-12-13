@@ -63,7 +63,8 @@
       "Bash(npx --version:*)",
       "Bash(npx tailwindcss init)",
       "Bash(npx expo install:*)",
-      "Bash(npx expo start --web --clear)"
+      "Bash(npx expo start --web --clear)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
