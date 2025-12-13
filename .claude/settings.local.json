@@ -55,7 +55,15 @@
       "Bash(./verify-db.bat)",
       "Bash(del push-db.bat verify-db.bat)",
       "Bash(npm:*)",
-      "Bash(aws ec2 describe-instances:*)"
+      "Bash(aws ec2 describe-instances:*)",
+      "Bash(git rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(node --version:*)",
+      "Bash(npx --version:*)",
+      "Bash(npx tailwindcss init)",
+      "Bash(npx expo install:*)",
+      "Bash(npx expo start --web --clear)"
     ],
     "deny": [],
     "ask": []

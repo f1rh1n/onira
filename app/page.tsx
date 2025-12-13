@@ -1,10 +1,92 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import ThemeToggle from "./components/ThemeToggle";
+import { signIn } from "next-auth/react";
 import Logo from "@/components/Logo";
 import { HiLink, HiChatBubbleLeftRight, HiSparkles } from "react-icons/hi2";
 
 export default function Home() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    if (formData.username.length < 3) {
+      setError("Username must be at least 3 characters");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          username: formData.username,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Something went wrong");
+        return;
+      }
+
+      // Auto sign in after registration
+      const result = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError("Account created but login failed. Please try logging in.");
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (error) {
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Random background image
   const backgroundImages = [
     '/photos/0e958fc52e2041a181dd5f5e5db5e240.jpg',
@@ -40,13 +122,12 @@ export default function Home() {
             <Link href="/login" className="text-foreground/80 hover:text-foreground transition">
               Login
             </Link>
-            <Link
-              href="/register"
+            <a
+              href="#signup"
               className="bg-gradient-purple-pink text-white px-4 py-2 rounded-full hover:shadow-lg transition-all duration-300 hover:scale-105"
             >
               Sign Up
-            </Link>
-            <ThemeToggle />
+            </a>
           </div>
         </nav>
       </header>
@@ -64,18 +145,18 @@ export default function Home() {
             Build trust and showcase authentic reviews on your profile.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-md sm:max-w-none mx-auto px-4 sm:px-0">
-            <Link
-              href="/register"
-              className="w-full sm:w-auto bg-gradient-purple-pink text-white px-8 py-3.5 rounded-full text-lg font-semibold hover:shadow-2xl transition-all duration-300 hover:scale-105 inline-block"
+            <a
+              href="#signup"
+              className="w-full sm:w-auto bg-gradient-purple-pink text-white px-8 py-3.5 rounded-full text-lg font-semibold hover:shadow-2xl transition-all duration-300 hover:scale-105 inline-block text-center"
             >
               Get Started
-            </Link>
-            <Link
+            </a>
+            <a
               href="#features"
-              className="w-full sm:w-auto glass border-2 border-white/30 text-white px-8 py-3.5 rounded-full text-lg font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105 inline-block"
+              className="w-full sm:w-auto glass border-2 border-white/30 text-white px-8 py-3.5 rounded-full text-lg font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105 inline-block text-center"
             >
               Learn More
-            </Link>
+            </a>
           </div>
         </div>
       </main>
@@ -115,6 +196,106 @@ export default function Home() {
                 directly to your Instagram stories.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sign Up Section */}
+      <section id="signup" className="section-padding bg-black/30">
+        <div className="container mx-auto px-4 max-w-md">
+          <div className="bg-white/95 dark:bg-gray-900/95 rounded-2xl card-shadow-lg card-padding">
+            <h3 className="text-2xl sm:text-3xl font-heading text-center mb-2 text-foreground">
+              Create Your Account
+            </h3>
+            <p className="text-center text-foreground/60 mb-6">
+              Start receiving anonymous reviews today
+            </p>
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/50 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-lg border border-foreground/20 bg-white dark:bg-gray-800 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  id="username"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-lg border border-foreground/20 bg-white dark:bg-gray-800 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                  required
+                  disabled={loading}
+                  minLength={3}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-lg border border-foreground/20 bg-white dark:bg-gray-800 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                  required
+                  disabled={loading}
+                  minLength={6}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-lg border border-foreground/20 bg-white dark:bg-gray-800 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                  required
+                  disabled={loading}
+                  minLength={6}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-purple-pink text-white py-3 rounded-full font-semibold hover:shadow-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                {loading ? "Creating Account..." : "Sign Up"}
+              </button>
+
+              <p className="text-center text-sm text-foreground/60 mt-4">
+                Already have an account?{" "}
+                <Link href="/login" className="text-purple-600 dark:text-purple-400 hover:underline font-semibold">
+                  Login here
+                </Link>
+              </p>
+            </form>
           </div>
         </div>
       </section>
