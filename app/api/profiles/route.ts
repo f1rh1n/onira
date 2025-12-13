@@ -1,13 +1,21 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { verifyJWT } from "@/lib/jwt-auth";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Try JWT authentication first (for mobile)
+    const jwtUser = verifyJWT(request);
+
+    // Fallback to NextAuth session (for web)
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    // Get user ID from either source
+    const userId = jwtUser?.id || (session?.user as any)?.id;
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -36,7 +44,7 @@ export async function POST(request: Request) {
     // Check if user already has a profile
     const existingProfile = await prisma.profile.findUnique({
       where: {
-        userId: (session.user as any).id,
+        userId: userId,
       },
     });
 
@@ -50,7 +58,7 @@ export async function POST(request: Request) {
     // Create profile
     const profile = await prisma.profile.create({
       data: {
-        userId: (session.user as any).id,
+        userId: userId,
         displayName,
         businessName: businessName || null,
         bio: bio || null,
@@ -76,11 +84,18 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   try {
+    // Try JWT authentication first (for mobile)
+    const jwtUser = verifyJWT(request);
+
+    // Fallback to NextAuth session (for web)
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    // Get user ID from either source
+    const userId = jwtUser?.id || (session?.user as any)?.id;
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -103,7 +118,7 @@ export async function PUT(request: Request) {
     // Update profile
     const profile = await prisma.profile.update({
       where: {
-        userId: (session.user as any).id,
+        userId: userId,
       },
       data: {
         displayName,

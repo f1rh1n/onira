@@ -3,16 +3,6 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
-  --card-bg: rgba(255, 255, 255, 0.7);
-  --border: rgba(203, 213, 225, 0.5);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.18);
-  --shadow: rgba(0, 0, 0, 0.1);
-}
-
-.dark {
   --background: #0f172a;
   --foreground: #f1f5f9;
   --card-bg: rgba(30, 41, 59, 0.7);
@@ -75,14 +65,9 @@ body {
   }
 
   .glass-nav {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(15, 23, 42, 0.8);
     backdrop-filter: blur(12px) saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
-    border-bottom: 1px solid rgba(203, 213, 225, 0.3);
-  }
-
-  .dark .glass-nav {
-    background: rgba(15, 23, 42, 0.8);
     border-bottom: 1px solid rgba(51, 65, 85, 0.3);
   }
 
@@ -139,33 +124,20 @@ body {
   }
 }
 
-/* Custom scrollbar for light theme */
+/* Custom scrollbar - dark mode only */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(241, 245, 249, 0.5);
+  background: rgba(30, 41, 59, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.5);
+  background: rgba(71, 85, 105, 0.5);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.7);
-}
-
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-track {
-  background: rgba(30, 41, 59, 0.5);
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.5);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.7);
 }
