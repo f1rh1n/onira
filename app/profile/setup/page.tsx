@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/components/Logo";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import AvatarPicker from "@/components/AvatarPicker";
 import Avatar from "@/components/Avatar";
 import { predefinedAvatars } from "@/lib/avatars";
@@ -83,7 +82,7 @@ export default function ProfileSetupPage() {
             {formData.avatar && (
               <Avatar avatarId={formData.avatar} size={40} className="ring-2 ring-purple-500/20" />
             )}
-            <ThemeToggle />
+            
             <Link href="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
               ← Back to Dashboard
             </Link>

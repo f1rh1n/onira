@@ -5,8 +5,8 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import ThemeToggle from "../components/ThemeToggle";
 import Logo from "@/components/Logo";
+import LoginLoadingScreen from "@/components/LoginLoadingScreen";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +16,7 @@ export default function LoginPage() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,16 +32,26 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError("Invalid email or password");
+        setLoading(false);
       } else {
-        router.push("/dashboard");
-        router.refresh();
+        // Show loading screen before redirecting
+        setShowLoadingScreen(true);
+        // Wait 2 seconds to show the animation
+        setTimeout(() => {
+          router.push("/dashboard");
+          router.refresh();
+        }, 2000);
       }
     } catch (error) {
       setError("Something went wrong");
-    } finally {
       setLoading(false);
     }
   };
+
+  // Show loading screen during successful login
+  if (showLoadingScreen) {
+    return <LoginLoadingScreen />;
+  }
 
   // Random background image
   const backgroundImages = [
@@ -65,9 +76,6 @@ export default function LoginPage() {
       {/* Dark overlay for better contrast */}
       <div className="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
 
-      <div className="absolute top-4 right-4 z-20">
-        <ThemeToggle />
-      </div>
       <div className="max-w-md w-full space-y-8 p-8 glass-card m-4 relative z-10 bg-white/95 dark:bg-gray-900/95">
         <div>
           <Link href="/" className="inline-block mb-4 transition-transform hover:scale-105">

@@ -8,7 +8,6 @@ import Image from "next/image";
 import Logo from "@/components/Logo";
 import { QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import Avatar from "@/components/Avatar";
 import { FiDownload, FiRefreshCw } from "react-icons/fi";
 import { predefinedAvatars, getAvatarUrl } from "@/lib/avatars";
@@ -307,7 +306,7 @@ export default function QRStudioPage() {
             {profile.avatar && (
               <Avatar avatarId={profile.avatar} size={40} className="ring-2 ring-purple-500/20" />
             )}
-            <ThemeToggle />
+            
             <Link href="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
               ← Back to Dashboard
             </Link>

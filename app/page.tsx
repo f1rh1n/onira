@@ -6,6 +6,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import Logo from "@/components/Logo";
 import { HiLink, HiChatBubbleLeftRight, HiSparkles } from "react-icons/hi2";
+import SignupLoadingScreen from "@/components/SignupLoadingScreen";
 
 export default function Home() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function Home() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +66,7 @@ export default function Home() {
 
       if (!response.ok) {
         setError(data.error || "Something went wrong");
+        setLoading(false);
         return;
       }
 
@@ -76,16 +79,26 @@ export default function Home() {
 
       if (result?.error) {
         setError("Account created but login failed. Please try logging in.");
+        setLoading(false);
       } else {
-        router.push("/dashboard");
-        router.refresh();
+        // Show loading screen before redirecting
+        setShowLoadingScreen(true);
+        // Wait 3 seconds to show the animation
+        setTimeout(() => {
+          router.push("/dashboard");
+          router.refresh();
+        }, 3000);
       }
     } catch (error) {
       setError("Something went wrong");
-    } finally {
       setLoading(false);
     }
   };
+
+  // Show loading screen during successful signup
+  if (showLoadingScreen) {
+    return <SignupLoadingScreen />;
+  }
 
   // Random background image
   const backgroundImages = [
@@ -302,8 +315,13 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="glass-nav border-t border-foreground/10 py-8">
-        <div className="container mx-auto px-4 text-center text-foreground/60">
-          <p>&copy; 2025 Onira. All rights reserved.</p>
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-xs text-white/40 mb-2">
+            reach us at ceo@onira.sbs
+          </p>
+          <p className="text-xs text-white/50 font-semibold tracking-wide">
+            made with claude & way too much coffee ☕✨
+          </p>
         </div>
       </footer>
       </div>

@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/components/Logo";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import { HiPlus, HiPencil, HiTrash } from "react-icons/hi2";
 
 interface Post {
@@ -91,7 +90,7 @@ export default function PostsPage() {
             <Link href="/profile/edit" className="text-foreground/80 hover:text-foreground transition">
               Edit Profile
             </Link>
-            <ThemeToggle />
+            
           </div>
         </nav>
       </header>

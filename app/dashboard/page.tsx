@@ -9,7 +9,6 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { FiTrendingUp, FiStar, FiMessageSquare, FiSettings, FiLogOut, FiCamera } from "react-icons/fi";
 import StatsCard from "@/components/StatsCard";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import Avatar from "@/components/Avatar";
 import Logo from "@/components/Logo";
 
@@ -90,7 +89,7 @@ export default function DashboardPage() {
               <Avatar avatarId={profile.avatar} size={40} className="ring-2 ring-purple-500/20" />
             )}
             <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">{(session?.user as any)?.username}</span>
-            <ThemeToggle />
+            
             <button
               onClick={() => router.push("/profile/edit")}
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"

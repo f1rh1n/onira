@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Logo from "@/components/Logo";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import { HiUsers, HiDocumentText, HiStar, HiHeart, HiChatAlt, HiRefresh } from "react-icons/hi";
 
 interface Metrics {
@@ -135,7 +134,7 @@ export default function MonitoringPage() {
             >
               Auto-refresh: {autoRefresh ? "ON" : "OFF"}
             </button>
-            <ThemeToggle />
+            
           </div>
         </nav>
       </header>

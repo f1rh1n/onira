@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/components/Logo";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import { HiPhoto, HiXMark } from "react-icons/hi2";
 
 export default function NewPostPage() {
@@ -105,7 +104,7 @@ export default function NewPostPage() {
             <Link href="/dashboard/posts" className="text-foreground/80 hover:text-foreground transition">
               ← Back to Posts
             </Link>
-            <ThemeToggle />
+            
           </div>
         </nav>
       </header>

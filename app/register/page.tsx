@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
-import ThemeToggle from "../components/ThemeToggle";
 import Logo from "@/components/Logo";
 
 export default function RegisterPage() {
@@ -112,7 +111,7 @@ export default function RegisterPage() {
       <div className="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
 
       <div className="absolute top-4 right-4 z-20">
-        <ThemeToggle />
+        
       </div>
       <div className="max-w-md w-full space-y-8 p-8 glass-card m-4 relative z-10 bg-white/95 dark:bg-gray-900/95">
         <div>
