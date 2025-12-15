@@ -1,0 +1,73 @@
+name: Diagnose EC2 Deployment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    name: Diagnose EC2 Instance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Run Diagnostics
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          echo "=========================================="
+          echo "ONIRA EC2 Deployment Diagnostics"
+          echo "=========================================="
+
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${EC2_USERNAME}@${EC2_HOST} bash << 'EOF'
+            echo ""
+            echo "1. Docker Containers Status:"
+            echo "----------------------------"
+            docker ps -a
+
+            echo ""
+            echo "2. Container Logs (last 50 lines):"
+            echo "----------------------------------"
+            docker logs onira-app --tail 50 2>&1 || echo "No container logs available"
+
+            echo ""
+            echo "3. Port 80 Status:"
+            echo "------------------"
+            sudo netstat -tlnp | grep :80 || echo "Nothing listening on port 80"
+
+            echo ""
+            echo "4. Docker Images:"
+            echo "-----------------"
+            docker images | grep onira
+
+            echo ""
+            echo "5. Local Health Check:"
+            echo "----------------------"
+            curl -v http://localhost/api/health 2>&1 || echo "Health endpoint not responding"
+
+            echo ""
+            echo "6. Disk Usage:"
+            echo "--------------"
+            df -h
+
+            echo ""
+            echo "7. Memory Usage:"
+            echo "----------------"
+            free -h
+
+            echo ""
+            echo "8. Recent System Logs:"
+            echo "----------------------"
+            sudo journalctl -u docker --no-pager -n 20
+
+            echo ""
+            echo "=========================================="
+            echo "Diagnostic Complete"
+            echo "=========================================="
+          EOF
