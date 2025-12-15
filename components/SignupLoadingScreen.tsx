@@ -159,7 +159,7 @@ export default function SignupLoadingScreen() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
           >
-            We've sent a welcome email to your inbox 📧
+            We&apos;ve sent a welcome email to your inbox 📧
           </motion.p>
         </motion.div>
 
