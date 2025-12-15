@@ -108,6 +108,21 @@ jobs:
           docker stop onira-app 2>/dev/null || true
           docker rm onira-app 2>/dev/null || true
 
+          # Wait for port to be released
+          echo "Waiting for port 80 to be released..."
+          sleep 3
+
+          # Kill any remaining process on port 80
+          sudo fuser -k 80/tcp 2>/dev/null || true
+          sleep 2
+
+          # Verify port 80 is free
+          if sudo lsof -ti :80 >/dev/null 2>&1; then
+            echo "ERROR: Port 80 is still in use!"
+            sudo lsof -i :80
+            exit 1
+          fi
+
           # Start new container
           echo "Starting new container..."
           docker run -d \
@@ -187,6 +202,15 @@ jobs:
         run: |
           # Use latest tag for deployment
           DOCKER_IMAGE="${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
+
+          # Tag current running container as 'previous' before deploying new version
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${EC2_USERNAME}@${EC2_HOST} \
+            "CURRENT_IMAGE=\$(docker inspect onira-app --format='{{.Image}}' 2>/dev/null || echo '') && \
+             if [ ! -z \"\$CURRENT_IMAGE\" ]; then \
+               docker tag \$CURRENT_IMAGE ${IMAGE_REGISTRY}/${IMAGE_NAME}:previous || true; \
+               echo 'Tagged current image as previous for rollback'; \
+             fi"
+
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${EC2_USERNAME}@${EC2_HOST} \
             "export DOCKER_IMAGE='${DOCKER_IMAGE}' && \
              export GITHUB_TOKEN='${GITHUB_TOKEN}' && \
@@ -223,8 +247,13 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${EC2_USERNAME}@${EC2_HOST} bash << EOF
             echo "Deployment failed! Attempting rollback..."
 
-            # Find previous image excluding 'latest' and '<none>' tags
-            PREVIOUS_IMAGE=\$(docker images ghcr.io/${GITHUB_REPO} --format "{{.Repository}}:{{.Tag}}" | grep -v ':latest' | grep -v ':<none>' | head -n 1)
+            # Try to use the 'previous' tag first, fall back to other images
+            PREVIOUS_IMAGE="ghcr.io/${GITHUB_REPO}:previous"
+
+            if ! docker image inspect \$PREVIOUS_IMAGE >/dev/null 2>&1; then
+              echo "'previous' tag not found, searching for other valid images..."
+              PREVIOUS_IMAGE=\$(docker images ghcr.io/${GITHUB_REPO} --format "{{.Repository}}:{{.Tag}}" | grep -v ':latest' | grep -v ':<none>' | head -n 1)
+            fi
 
             if [ -z "\$PREVIOUS_IMAGE" ] || [ "\$PREVIOUS_IMAGE" == "ghcr.io/${GITHUB_REPO}:<none>" ]; then
               echo "No valid previous image found for rollback"
@@ -236,8 +265,13 @@ jobs:
 
             echo "Rolling back to: \$PREVIOUS_IMAGE"
 
+            # Stop and remove failed container
             docker stop onira-app 2>/dev/null || true
             docker rm onira-app 2>/dev/null || true
+
+            # Ensure port 80 is free
+            sudo fuser -k 80/tcp 2>/dev/null || true
+            sleep 2
 
             docker run -d \
               --name onira-app \
