@@ -26,7 +26,7 @@ function getClientIP(request: Request): string {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { profileId, reviewerName, rating, comment, reviewerAvatar } = body;
+    const { profileId, reviewerName, rating, comment, reviewerAvatar, anonymousId } = body;
 
     if (!profileId || !reviewerName || !rating || !comment) {
       return NextResponse.json(
@@ -58,13 +58,19 @@ export async function POST(request: Request) {
     const clientIP = getClientIP(request);
     const hashedIP = hashIP(clientIP);
 
-    // Check for recent reviews from same IP for this profile (24-hour cooldown)
+    // Use anonymousId if provided (from mobile app), otherwise use IP
+    const trackingId = anonymousId || hashedIP;
+
+    // Check for recent reviews from same user for this profile (24-hour cooldown)
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const recentReview = await prisma.review.findFirst({
       where: {
         profileId,
-        reviewerIp: hashedIP,
+        OR: [
+          { anonymousId: trackingId },
+          { reviewerIp: hashedIP },
+        ],
         createdAt: {
           gte: twentyFourHoursAgo,
         },
@@ -93,6 +99,7 @@ export async function POST(request: Request) {
         comment,
         reviewerAvatar: reviewerAvatar || null,
         reviewerIp: hashedIP,
+        anonymousId: anonymousId || null,
         isPublished: false, // Owner must approve
       },
     });

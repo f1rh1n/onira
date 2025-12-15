@@ -64,7 +64,14 @@
       "Bash(npx tailwindcss init)",
       "Bash(npx expo install:*)",
       "Bash(npx expo start --web --clear)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(move studio.tsx index.tsx)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(test:*)",
+      "Bash(npx expo start:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(ssh:*)"
     ],
     "deny": [],
     "ask": []

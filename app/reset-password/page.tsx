@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import LoadingScreen from "@/components/LoadingScreen";
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -59,10 +60,6 @@ function ResetPasswordContent() {
       }
 
       setSuccess(true);
-      // Redirect to sign in page after 2 seconds
-      setTimeout(() => {
-        router.push("/signin");
-      }, 2000);
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -91,14 +88,35 @@ function ResetPasswordContent() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 mb-6 text-center"
+              className="space-y-4"
             >
-              <p className="text-green-200 mb-2">
-                Password reset successfully!
-              </p>
-              <p className="text-green-300 text-sm">
-                Redirecting to sign in page...
-              </p>
+              <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-6 text-center">
+                <svg
+                  className="w-16 h-16 mx-auto mb-4 text-green-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <h2 className="text-2xl font-bold text-green-200 mb-2">
+                  Password Reset Successfully!
+                </h2>
+                <p className="text-green-300 text-sm mb-4">
+                  Your password has been updated. You can now login with your new password.
+                </p>
+                <button
+                  onClick={() => router.push("/login")}
+                  className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-600 transition"
+                >
+                  Go to Login
+                </button>
+              </div>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -176,10 +194,10 @@ function ResetPasswordContent() {
 
           <div className="mt-6 text-center">
             <Link
-              href="/signin"
+              href="/login"
               className="text-purple-300 hover:text-purple-200 text-sm transition"
             >
-              Back to Sign In
+              Back to Login
             </Link>
           </div>
         </div>
@@ -190,11 +208,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
-        <div className="text-white">Loading...</div>
-      </div>
-    }>
+    <Suspense fallback={<LoadingScreen />}>
       <ResetPasswordContent />
     </Suspense>
   );

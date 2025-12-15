@@ -8,19 +8,32 @@ export async function POST(request: NextRequest) {
   try {
     // Try JWT authentication first (for mobile)
     const jwtUser = verifyJWT(request);
+    let userEmail: string | null = null;
 
-    // Fallback to NextAuth session (for web)
-    const session = await getServerSession(authOptions);
+    if (jwtUser) {
+      userEmail = jwtUser.email;
+    } else {
+      // Fall back to NextAuth session (for web)
+      const session = await getServerSession(authOptions);
+      userEmail = session?.user?.email || null;
+    }
 
-    // Get user ID from either source
-    const userId = jwtUser?.id || (session?.user as any)?.id;
-
-    if (!userId) {
+    if (!userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const body = await request.json();
     const {
+      username,
       displayName,
       businessName,
       bio,
@@ -44,7 +57,7 @@ export async function POST(request: NextRequest) {
     // Check if user already has a profile
     const existingProfile = await prisma.profile.findUnique({
       where: {
-        userId: userId,
+        userId: user.id,
       },
     });
 
@@ -58,7 +71,8 @@ export async function POST(request: NextRequest) {
     // Create profile
     const profile = await prisma.profile.create({
       data: {
-        userId: userId,
+        userId: user.id,
+        username: username || null,
         displayName,
         businessName: businessName || null,
         bio: bio || null,
@@ -88,19 +102,32 @@ export async function PUT(request: NextRequest) {
   try {
     // Try JWT authentication first (for mobile)
     const jwtUser = verifyJWT(request);
+    let userEmail: string | null = null;
 
-    // Fallback to NextAuth session (for web)
-    const session = await getServerSession(authOptions);
+    if (jwtUser) {
+      userEmail = jwtUser.email;
+    } else {
+      // Fall back to NextAuth session (for web)
+      const session = await getServerSession(authOptions);
+      userEmail = session?.user?.email || null;
+    }
 
-    // Get user ID from either source
-    const userId = jwtUser?.id || (session?.user as any)?.id;
-
-    if (!userId) {
+    if (!userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const body = await request.json();
     const {
+      username,
       displayName,
       businessName,
       bio,
@@ -115,12 +142,27 @@ export async function PUT(request: NextRequest) {
       coverImage,
     } = body;
 
+    // Check if username is already taken (if changing username)
+    if (username !== undefined && username !== null) {
+      const existingProfile = await prisma.profile.findUnique({
+        where: { username: username },
+      });
+
+      if (existingProfile && existingProfile.userId !== user.id) {
+        return NextResponse.json(
+          { error: "Username is already taken" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Update profile
     const profile = await prisma.profile.update({
       where: {
-        userId: userId,
+        userId: user.id,
       },
       data: {
+        username: username !== undefined ? (username || null) : undefined,
         displayName,
         businessName: businessName || null,
         bio: bio || null,
@@ -137,10 +179,19 @@ export async function PUT(request: NextRequest) {
     });
 
     return NextResponse.json({ profile });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Profile update error:", error);
+
+    // Handle Prisma unique constraint errors
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { error: "Username is already taken" },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Something went wrong" },
+      { error: error.message || "Something went wrong" },
       { status: 500 }
     );
   }

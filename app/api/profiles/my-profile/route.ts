@@ -8,32 +8,38 @@ export async function GET(request: NextRequest) {
   try {
     // Try JWT authentication first (for mobile)
     const jwtUser = verifyJWT(request);
+    let userEmail: string | null = null;
 
-    // Fallback to NextAuth session (for web)
-    const session = await getServerSession(authOptions);
+    if (jwtUser) {
+      userEmail = jwtUser.email;
+    } else {
+      // Fall back to NextAuth session (for web)
+      const session = await getServerSession(authOptions);
+      userEmail = session?.user?.email || null;
+    }
 
-    // Get user ID from either source
-    const userId = jwtUser?.id || (session?.user as any)?.id;
-
-    if (!userId) {
+    if (!userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const profile = await prisma.profile.findUnique({
-      where: {
-        userId: userId,
-      },
+    // Get user and profile
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
       include: {
-        _count: {
-          select: {
-            reviews: true,
-            posts: true,
+        profile: {
+          include: {
+            _count: {
+              select: {
+                reviews: true,
+                posts: true,
+              },
+            },
           },
         },
       },
     });
 
-    return NextResponse.json({ profile });
+    return NextResponse.json({ profile: user?.profile || null });
   } catch (error) {
     console.error("Profile fetch error:", error);
     return NextResponse.json(

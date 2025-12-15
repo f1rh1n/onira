@@ -1,21 +1,32 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { verifyJWT } from "@/lib/jwt-auth";
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { postId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try JWT authentication first (for mobile)
+    const jwtUser = verifyJWT(request);
+    let userEmail: string | null = null;
 
-    if (!session?.user?.email) {
+    if (jwtUser) {
+      userEmail = jwtUser.email;
+    } else {
+      // Fall back to NextAuth session (for web)
+      const session = await getServerSession(authOptions);
+      userEmail = session?.user?.email || null;
+    }
+
+    if (!userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: userEmail },
       include: { profile: true },
     });
 
@@ -47,18 +58,28 @@ export async function DELETE(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { postId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try JWT authentication first (for mobile)
+    const jwtUser = verifyJWT(request);
+    let userEmail: string | null = null;
 
-    if (!session?.user?.email) {
+    if (jwtUser) {
+      userEmail = jwtUser.email;
+    } else {
+      // Fall back to NextAuth session (for web)
+      const session = await getServerSession(authOptions);
+      userEmail = session?.user?.email || null;
+    }
+
+    if (!userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: userEmail },
       include: { profile: true },
     });
 
