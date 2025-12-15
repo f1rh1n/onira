@@ -20,6 +20,21 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
 
+  // Random background image - use useEffect to avoid hydration mismatch
+  const backgroundImages = [
+    '/photos/0e958fc52e2041a181dd5f5e5db5e240.jpg',
+    '/photos/2f44b645f350e5ab5b0af515eca2765c.jpg',
+    '/photos/38f176db36e57fed2b2aff43b7295e25.jpg',
+    '/photos/41f267491032c24bbf9c9ccec7e5a691.jpg',
+    '/photos/f476c829853e16534c9b857cffd1f128.jpg',
+  ];
+  const [randomBg, setRandomBg] = useState(backgroundImages[0]);
+
+  // Set random background on client side only to avoid hydration mismatch
+  useEffect(() => {
+    setRandomBg(backgroundImages[Math.floor(Math.random() * backgroundImages.length)]);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -99,21 +114,6 @@ export default function Home() {
   if (showLoadingScreen) {
     return <SimpleLoadingScreen message="Creating your account" />;
   }
-
-  // Random background image - use useEffect to avoid hydration mismatch
-  const backgroundImages = [
-    '/photos/0e958fc52e2041a181dd5f5e5db5e240.jpg',
-    '/photos/2f44b645f350e5ab5b0af515eca2765c.jpg',
-    '/photos/38f176db36e57fed2b2aff43b7295e25.jpg',
-    '/photos/41f267491032c24bbf9c9ccec7e5a691.jpg',
-    '/photos/f476c829853e16534c9b857cffd1f128.jpg',
-  ];
-  const [randomBg, setRandomBg] = useState(backgroundImages[0]);
-
-  // Set random background on client side only to avoid hydration mismatch
-  useEffect(() => {
-    setRandomBg(backgroundImages[Math.floor(Math.random() * backgroundImages.length)]);
-  }, []);
 
   return (
     <div
