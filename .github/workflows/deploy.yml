@@ -223,10 +223,14 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${EC2_USERNAME}@${EC2_HOST} bash << EOF
             echo "Deployment failed! Attempting rollback..."
 
-            PREVIOUS_IMAGE=\$(docker images ghcr.io/${GITHUB_REPO} --format "{{.Repository}}:{{.Tag}}" | sed -n 2p)
+            # Find previous image excluding 'latest' and '<none>' tags
+            PREVIOUS_IMAGE=\$(docker images ghcr.io/${GITHUB_REPO} --format "{{.Repository}}:{{.Tag}}" | grep -v ':latest' | grep -v ':<none>' | head -n 1)
 
-            if [ -z "\$PREVIOUS_IMAGE" ]; then
-              echo "No previous image found for rollback"
+            if [ -z "\$PREVIOUS_IMAGE" ] || [ "\$PREVIOUS_IMAGE" == "ghcr.io/${GITHUB_REPO}:<none>" ]; then
+              echo "No valid previous image found for rollback"
+              echo "Available images:"
+              docker images ghcr.io/${GITHUB_REPO}
+              echo "Deployment failed - manual intervention required"
               exit 1
             fi
 
