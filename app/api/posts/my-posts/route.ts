@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (!userEmail) {
-
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -36,12 +35,11 @@ export async function GET(request: NextRequest) {
       },
     });
 
-   if (!user?.profile) {
-  return NextResponse.json([]);
-}
+    if (!user?.profile) {
+      return NextResponse.json({ posts: [] });
+    }
 
-return NextResponse.json(user.profile.posts);
-
+    return NextResponse.json({ posts: user.profile.posts });
   } catch (error) {
     console.error("Error fetching posts:", error);
     return NextResponse.json(
