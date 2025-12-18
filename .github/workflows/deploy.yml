@@ -77,7 +77,7 @@ jobs:
             docker pull ghcr.io/f1rh1n/onira:latest
 
             echo "Starting app with docker-compose..."
-            docker compose up -d
+            docker-compose up -d
 
             echo "Running containers:"
             docker ps
