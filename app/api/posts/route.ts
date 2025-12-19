@@ -51,7 +51,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(post, { status: 201 });
+   return NextResponse.json(
+  {
+    ...post,
+    tags: post.tags ? JSON.parse(post.tags) : [],
+    images: post.images ? JSON.parse(post.images) : [],
+  },
+  { status: 201 }
+);
+
   } catch (error) {
     console.error("Error creating post:", error);
     return NextResponse.json(
