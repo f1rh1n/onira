@@ -70,6 +70,18 @@ jobs:
             echo "===== ONIRA DEPLOY START ====="
             cd /home/ec2-user
 
+            echo "Checking disk space..."
+            df -h
+
+            echo "Cleaning up Docker resources..."
+            docker container prune -f || true
+            docker image prune -a -f || true
+            docker volume prune -f || true
+            docker builder prune -a -f || true
+
+            echo "Disk space after cleanup:"
+            df -h
+
             echo "Logging into GHCR..."
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
