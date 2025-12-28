@@ -6,6 +6,12 @@ import Script from "next/script";
 export const metadata: Metadata = {
   title: "Onira - Your Portfolio & Review Platform",
   description: "Create your portfolio and receive anonymous reviews",
+  verification: {
+    google: "ca-pub-3883183539588443",
+  },
+  other: {
+    "google-adsense-account": "ca-pub-3883183539588443",
+  },
 };
 
 export default function RootLayout({
