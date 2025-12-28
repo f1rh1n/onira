@@ -5,6 +5,7 @@ import PostsGrid from "@/components/PostsGrid";
 import Logo from "@/components/Logo";
 import Image from "next/image";
 import Avatar from "@/components/Avatar";
+import GoogleAdSense from "@/components/GoogleAdSense";
 import { HiMapPin, HiPhone, HiGlobeAlt, HiStar } from "react-icons/hi2";
 import { FaInstagram } from "react-icons/fa";
 
@@ -194,6 +195,16 @@ export default async function PublicProfilePage({
         {/* Leave a Review Section - Collapsible Button */}
         <CollapsibleReviewForm profileId={profile.id} username={user.username} />
 
+        {/* AdSense Ad - Top Section */}
+        <div className="mb-6">
+          <GoogleAdSense
+            adSlot="2599313330"
+            adFormat="auto"
+            className="mb-4"
+            adStyle={{ display: "block", textAlign: "center" }}
+          />
+        </div>
+
         {/* Instagram-Style Posts Grid */}
         {profile.posts && profile.posts.length > 0 && (
           <div className="mb-6">
@@ -204,6 +215,16 @@ export default async function PublicProfilePage({
             <PostsGrid posts={profile.posts} />
           </div>
         )}
+
+        {/* AdSense Ad - Middle Section */}
+        <div className="mb-6">
+          <GoogleAdSense
+            adSlot="5963843278"
+            adFormat="auto"
+            className="mb-4"
+            adStyle={{ display: "block", textAlign: "center" }}
+          />
+        </div>
 
         {/* Reviews Section */}
         {profile.reviews.length > 0 && (
