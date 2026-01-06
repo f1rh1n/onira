@@ -170,7 +170,7 @@ export default function DashboardPage() {
                     Welcome back, {profile.displayName}!
                   </h1>
                   <p className="text-white/70 text-lg">
-                    Here's what's happening with your profile today
+                    Here&apos;s what&apos;s happening with your profile today
                   </p>
                 </div>
                 <Link
