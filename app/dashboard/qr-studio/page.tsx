@@ -6,10 +6,21 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/components/Logo";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import { QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import Avatar from "@/components/Avatar";
-import { FiDownload, FiRefreshCw } from "react-icons/fi";
+import {
+  FiDownload,
+  FiRefreshCw,
+  FiShare2,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiSave,
+  FiTrash2,
+  FiCamera,
+  FiAlertTriangle,
+} from "react-icons/fi";
 import { predefinedAvatars, getAvatarUrl } from "@/lib/avatars";
 
 interface Profile {
@@ -20,6 +31,18 @@ interface Profile {
 }
 
 type CardTemplate = "business" | "instagram" | "minimalist" | "dark" | "neon";
+type DownloadFormat = "PNG" | "JPG" | "SVG";
+
+interface ColorPreset {
+  name: string;
+  fg: string;
+  bg: string;
+  category: string;
+}
+
+interface SavedPreset extends ColorPreset {
+  id: string;
+}
 
 export default function QRStudioPage() {
   const router = useRouter();
@@ -37,6 +60,13 @@ export default function QRStudioPage() {
   const [avatarInQR, setAvatarInQR] = useState(true);
   const [profileUrl, setProfileUrl] = useState("");
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | undefined>(undefined);
+
+  // New state for enhancements
+  const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("PNG");
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null);
+  const [savedPresets, setSavedPresets] = useState<SavedPreset[]>([]);
+  const [showPresetSave, setShowPresetSave] = useState(false);
+  const [presetName, setPresetName] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -112,6 +142,94 @@ export default function QRStudioPage() {
     loadAvatarDataUrl();
   }, [profile?.avatar]);
 
+  // Load saved presets from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("qr-presets");
+    if (saved) {
+      try {
+        setSavedPresets(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load presets");
+      }
+    }
+  }, []);
+
+  // Helper functions
+  const showToast = (message: string, type: "success" | "error" | "warning") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const getContrastRatio = (color1: string, color2: string) => {
+    const getLuminance = (color: string) => {
+      const hex = color.replace("#", "");
+      const r = parseInt(hex.substr(0, 2), 16) / 255;
+      const g = parseInt(hex.substr(2, 2), 16) / 255;
+      const b = parseInt(hex.substr(4, 2), 16) / 255;
+
+      const [rs, gs, bs] = [r, g, b].map(c => {
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+
+      return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    };
+
+    const lum1 = getLuminance(color1);
+    const lum2 = getLuminance(color2);
+    const brightest = Math.max(lum1, lum2);
+    const darkest = Math.min(lum1, lum2);
+
+    return (brightest + 0.05) / (darkest + 0.05);
+  };
+
+  const contrastRatio = getContrastRatio(fgColor, bgColor);
+  const hasGoodContrast = contrastRatio >= 4.5;
+
+  const savePreset = () => {
+    if (!presetName.trim()) {
+      showToast("Please enter a preset name", "error");
+      return;
+    }
+
+    const newPreset: SavedPreset = {
+      id: Date.now().toString(),
+      name: presetName,
+      fg: fgColor,
+      bg: bgColor,
+      category: "Custom",
+    };
+
+    const updated = [...savedPresets, newPreset];
+    setSavedPresets(updated);
+    localStorage.setItem("qr-presets", JSON.stringify(updated));
+    setPresetName("");
+    setShowPresetSave(false);
+    showToast("Preset saved successfully!", "success");
+  };
+
+  const deletePreset = (id: string) => {
+    const updated = savedPresets.filter(p => p.id !== id);
+    setSavedPresets(updated);
+    localStorage.setItem("qr-presets", JSON.stringify(updated));
+    showToast("Preset deleted", "success");
+  };
+
+  const applyPreset = (preset: ColorPreset) => {
+    setFgColor(preset.fg);
+    setBgColor(preset.bg);
+    showToast(`Applied "${preset.name}" preset`, "success");
+  };
+
+  const resetToDefaults = () => {
+    setFgColor("#7c3aed");
+    setBgColor("#ffffff");
+    setSize(200);
+    setTemplate("business");
+    setAvatarInQR(true);
+    setDownloadFormat("PNG");
+    showToast("Reset to default settings", "success");
+  };
+
   const downloadQRCard = async () => {
     if (!cardRef.current) return;
 
@@ -124,13 +242,28 @@ export default function QRStudioPage() {
         logging: false,
       });
 
-      // Convert canvas to data URL (base64) with proper MIME type
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+      let dataUrl: string;
+      let filename: string;
+      let mimeType: string;
 
-      // Use data URL for download (ensures proper MIME type)
+      if (downloadFormat === "PNG") {
+        dataUrl = canvas.toDataURL("image/png");
+        filename = "qr-code.png";
+        mimeType = "image/png";
+      } else if (downloadFormat === "JPG") {
+        dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+        filename = "qr-code.jpg";
+        mimeType = "image/jpeg";
+      } else {
+        // SVG format - will be handled differently if needed
+        dataUrl = canvas.toDataURL("image/png");
+        filename = "qr-code.png";
+        mimeType = "image/png";
+      }
+
       const link = document.createElement("a");
       link.href = dataUrl;
-      link.download = "qr-code.jpg";
+      link.download = filename;
       link.style.display = "none";
       document.body.appendChild(link);
       link.click();
@@ -139,20 +272,10 @@ export default function QRStudioPage() {
         document.body.removeChild(link);
       }, 100);
 
-      // Check if mobile
-      const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      // Show helpful message
-      if (isMobile) {
-        setTimeout(() => {
-          alert('📱 QR code saved!\n\nOpen your Gallery app and you should find "qr-code.jpg" there.');
-        }, 300);
-      } else {
-        alert("✅ QR code downloaded!");
-      }
+      showToast(`QR code downloaded as ${downloadFormat}!`, "success");
     } catch (error) {
       console.error("Error downloading QR card:", error);
-      alert("Failed to download QR card. Please try again.");
+      showToast("Failed to download QR code", "error");
     }
   };
 
@@ -216,17 +339,31 @@ export default function QRStudioPage() {
       // Show helpful instructions
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
-        setTimeout(() => {
-          alert('📱 Image saved!\n\nOpen your Gallery app and you should find "qr-code.jpg" there.\n\nTo share to Instagram:\n1. Open the image\n2. Tap Share\n3. Select Instagram Stories');
-        }, 300);
+        showToast("Image saved! Open Gallery to share to Instagram", "success");
       } else {
-        alert('💻 Image downloaded! Transfer to your phone and share to Instagram Stories.');
+        showToast("Image downloaded! Transfer to phone to share", "success");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to create image. Please try again.");
+      showToast("Failed to create image", "error");
     }
   };
+
+  const defaultPresets: ColorPreset[] = [
+    { name: "Purple", fg: "#7c3aed", bg: "#ffffff", category: "Professional" },
+    { name: "Classic", fg: "#000000", bg: "#ffffff", category: "Professional" },
+    { name: "Pink", fg: "#ec4899", bg: "#ffffff", category: "Vibrant" },
+    { name: "Cyber", fg: "#06b6d4", bg: "#000000", category: "Neon" },
+    { name: "Emerald", fg: "#10b981", bg: "#ffffff", category: "Vibrant" },
+    { name: "Orange", fg: "#f97316", bg: "#ffffff", category: "Vibrant" },
+  ];
+
+  const sizePresets = [
+    { name: "Small", value: 150 },
+    { name: "Medium", value: 200 },
+    { name: "Large", value: 300 },
+    { name: "Extra Large", value: 400 },
+  ];
 
   const templates = {
     business: {
@@ -266,72 +403,122 @@ export default function QRStudioPage() {
     },
   };
 
+  const currentTemplate = templates[template];
+
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0a0a0a]">
-        <div className="text-lg text-gray-900 dark:text-white">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2a4a] via-[#2d1f4a] to-[#3d1a5f]"></div>
+        <div className="absolute inset-0 bg-gradient-radial from-purple-600/20 via-transparent to-transparent"></div>
+        <AnimatedBackground />
+        <div className="relative z-10">
+          <div className="w-16 h-16 border-4 border-purple-300 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading QR Studio...</p>
+        </div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0a0a0a]">
-        <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Please create a profile first
-          </p>
-          <Link
-            href="/profile/setup"
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700"
-          >
-            Create Profile
-          </Link>
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2a4a] via-[#2d1f4a] to-[#3d1a5f]"></div>
+        <div className="absolute inset-0 bg-gradient-radial from-purple-600/20 via-transparent to-transparent"></div>
+        <AnimatedBackground />
+        <div className="relative z-10 text-center">
+          <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 p-12">
+            <p className="text-white/80 text-lg mb-6">
+              Please create a profile first
+            </p>
+            <Link
+              href="/profile/setup"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl hover:shadow-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 font-semibold text-lg"
+            >
+              Create Profile
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  const currentTemplate = templates[template];
-
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
-      {/* Header */}
-      <header className="bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-gray-800">
-        <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard">
-            <Logo />
-          </Link>
-          <div className="flex items-center gap-4">
-            {profile.avatar && (
-              <Avatar avatarId={profile.avatar} size={40} className="ring-2 ring-purple-500/20" />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Premium gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#1a2a4a] via-[#2d1f4a] to-[#3d1a5f]"></div>
+      <div className="absolute inset-0 bg-gradient-radial from-purple-600/20 via-transparent to-transparent"></div>
+      <AnimatedBackground />
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-[100] animate-slide-in">
+          <div className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl backdrop-blur-md border ${
+            toast.type === "success"
+              ? "bg-green-500/90 border-green-400 text-white"
+              : toast.type === "error"
+              ? "bg-red-500/90 border-red-400 text-white"
+              : "bg-yellow-500/90 border-yellow-400 text-white"
+          }`}>
+            {toast.type === "success" ? (
+              <FiCheckCircle className="w-5 h-5" />
+            ) : toast.type === "error" ? (
+              <FiAlertCircle className="w-5 h-5" />
+            ) : (
+              <FiAlertTriangle className="w-5 h-5" />
             )}
-            
-            <Link href="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-              ← Back to Dashboard
-            </Link>
+            <p className="font-medium">{toast.message}</p>
           </div>
-        </nav>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            QR Code Studio ✨
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Create beautiful QR codes for your profile
-          </p>
         </div>
+      )}
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Customization Panel */}
-          <div className="space-y-6">
-            <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                Customize Your QR Code
-              </h2>
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="bg-black/20 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
+          <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <Link href="/dashboard" className="transition-transform hover:scale-105">
+              <Logo />
+            </Link>
+            <div className="flex items-center gap-4">
+              {profile.avatar && (
+                <Avatar avatarId={profile.avatar} size={40} className="ring-2 ring-purple-500/50" />
+              )}
+
+              <Link href="/dashboard" className="text-white/70 hover:text-white transition font-medium">
+                ← Back to Dashboard
+              </Link>
+            </div>
+          </nav>
+        </header>
+
+        {/* Main Content */}
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-2">
+                <FiCamera className="w-8 h-8 text-purple-400" />
+                QR Code Studio
+              </h1>
+              <p className="text-white/70 text-lg">
+                Create beautiful, professional QR codes for your profile
+              </p>
+            </div>
+            <button
+              onClick={resetToDefaults}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white rounded-xl hover:bg-white/20 transition font-medium"
+            >
+              <FiRefreshCw className="w-4 h-4" />
+              Reset to Defaults
+            </button>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Customization Panel */}
+            <div className="space-y-6">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                  Customize Your QR Code
+                </h2>
 
               {/* Template Selection */}
               <div className="mb-6">
@@ -624,5 +811,6 @@ export default function QRStudioPage() {
         </div>
       </main>
     </div>
+  </div>
   );
 }

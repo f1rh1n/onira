@@ -122,6 +122,11 @@ body {
     outline: 2px solid #a855f7;
     outline-offset: 2px;
   }
+
+  /* Radial gradient for glow effect */
+  .bg-gradient-radial {
+    background: radial-gradient(circle at center, var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to));
+  }
 }
 
 /* Custom scrollbar - dark mode only */

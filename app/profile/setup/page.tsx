@@ -8,6 +8,7 @@ import Image from "next/image";
 import Logo from "@/components/Logo";
 import AvatarPicker from "@/components/AvatarPicker";
 import Avatar from "@/components/Avatar";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import { predefinedAvatars } from "@/lib/avatars";
 
 export default function ProfileSetupPage() {
@@ -64,43 +65,57 @@ export default function ProfileSetupPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0a0a0a]">
-        <div className="text-lg text-gray-900 dark:text-white">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+        {/* Premium gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2a4a] via-[#2d1f4a] to-[#3d1a5f]"></div>
+        <div className="absolute inset-0 bg-gradient-radial from-purple-600/20 via-transparent to-transparent"></div>
+        <AnimatedBackground />
+        <div className="relative z-10">
+          <div className="w-16 h-16 border-4 border-purple-300 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
-      {/* Header */}
-      <header className="bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-gray-800">
-        <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard">
-            <Logo />
-          </Link>
-          <div className="flex items-center gap-4">
-            {formData.avatar && (
-              <Avatar avatarId={formData.avatar} size={40} className="ring-2 ring-purple-500/20" />
-            )}
-            
-            <Link href="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-              ← Back to Dashboard
-            </Link>
-          </div>
-        </nav>
-      </header>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Premium gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#1a2a4a] via-[#2d1f4a] to-[#3d1a5f]"></div>
+      <div className="absolute inset-0 bg-gradient-radial from-purple-600/20 via-transparent to-transparent"></div>
+      <AnimatedBackground />
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg border border-gray-200 dark:border-gray-800 p-8">
-          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Set Up Your Profile</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
-            Tell us about your business or personal brand
-          </p>
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="bg-black/20 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
+          <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <Link href="/dashboard" className="transition-transform hover:scale-105">
+              <Logo />
+            </Link>
+            <div className="flex items-center gap-4">
+              {formData.avatar && (
+                <Avatar avatarId={formData.avatar} size={40} className="ring-2 ring-purple-500/50" />
+              )}
+
+              <Link href="/dashboard" className="text-white/70 hover:text-white transition font-medium">
+                ← Back to Dashboard
+              </Link>
+            </div>
+          </nav>
+        </header>
+
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <div className="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-8 md:p-10">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 text-white">Set Up Your Profile</h1>
+            <p className="text-white/70 text-lg mb-8">
+              Tell us about your business or personal brand
+            </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-900/50 border border-red-700 text-red-200 p-3 rounded">
-                {error}
+              <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500 text-red-700 dark:text-red-400 p-4 rounded-xl" role="alert">
+                <p className="font-medium">{error}</p>
               </div>
             )}
 
@@ -110,14 +125,14 @@ export default function ProfileSetupPage() {
             />
 
             <div>
-              <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="displayName" className="block text-sm font-semibold text-white mb-2">
                 Display Name *
               </label>
               <input
                 id="displayName"
                 type="text"
                 required
-                className="w-full px-3 py-2 bg-white dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white/5 border-2 border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 value={formData.displayName}
                 onChange={(e) =>
                   setFormData({ ...formData, displayName: e.target.value })
@@ -127,13 +142,13 @@ export default function ProfileSetupPage() {
             </div>
 
             <div>
-              <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="businessName" className="block text-sm font-semibold text-white mb-2">
                 Business Name
               </label>
               <input
                 id="businessName"
                 type="text"
-                className="w-full px-3 py-2 bg-white dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                className="w-full px-4 py-3 bg-white/5 border-2 border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 value={formData.businessName}
                 onChange={(e) =>
                   setFormData({ ...formData, businessName: e.target.value })
@@ -143,13 +158,13 @@ export default function ProfileSetupPage() {
             </div>
 
             <div>
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="bio" className="block text-sm font-semibold text-white mb-2">
                 Bio / Description
               </label>
               <textarea
                 id="bio"
                 rows={4}
-                className="w-full px-3 py-2 bg-white dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                className="w-full px-4 py-3 bg-white/5 border-2 border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 value={formData.bio}
                 onChange={(e) =>
                   setFormData({ ...formData, bio: e.target.value })
@@ -160,13 +175,13 @@ export default function ProfileSetupPage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="location" className="block text-sm font-semibold text-white mb-2">
                   Location
                 </label>
                 <input
                   id="location"
                   type="text"
-                  className="w-full px-3 py-2 bg-white dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full px-4 py-3 bg-white/5 border-2 border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   value={formData.location}
                   onChange={(e) =>
                     setFormData({ ...formData, location: e.target.value })
@@ -176,13 +191,13 @@ export default function ProfileSetupPage() {
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="phone" className="block text-sm font-semibold text-white mb-2">
                   Phone Number
                 </label>
                 <input
                   id="phone"
                   type="tel"
-                  className="w-full px-3 py-2 bg-white dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full px-4 py-3 bg-white/5 border-2 border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
@@ -194,13 +209,13 @@ export default function ProfileSetupPage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="website" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="website" className="block text-sm font-semibold text-white mb-2">
                   Website
                 </label>
                 <input
                   id="website"
                   type="url"
-                  className="w-full px-3 py-2 bg-white dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full px-4 py-3 bg-white/5 border-2 border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   value={formData.website}
                   onChange={(e) =>
                     setFormData({ ...formData, website: e.target.value })
@@ -210,13 +225,13 @@ export default function ProfileSetupPage() {
               </div>
 
               <div>
-                <label htmlFor="instagram" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="instagram" className="block text-sm font-semibold text-white mb-2">
                   Instagram Handle
                 </label>
                 <input
                   id="instagram"
                   type="text"
-                  className="w-full px-3 py-2 bg-white dark:bg-[#0a0a0a] border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full px-4 py-3 bg-white/5 border-2 border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   value={formData.instagram}
                   onChange={(e) =>
                     setFormData({ ...formData, instagram: e.target.value })
@@ -226,24 +241,25 @@ export default function ProfileSetupPage() {
               </div>
             </div>
 
-            <div className="flex space-x-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3.5 rounded-xl text-lg font-semibold hover:shadow-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 active:scale-95"
               >
                 {loading ? "Creating..." : "Create Profile"}
               </button>
               <button
                 type="button"
                 onClick={() => router.push("/dashboard")}
-                className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#0a0a0a]"
+                className="px-6 py-3.5 border-2 border-white/30 rounded-xl text-white font-semibold hover:bg-white/10 transition-all hover:scale-[1.02] active:scale-95"
               >
                 Cancel
               </button>
             </div>
           </form>
         </div>
+      </div>
       </div>
     </div>
   );

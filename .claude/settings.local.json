@@ -71,7 +71,10 @@
       "Bash(test:*)",
       "Bash(npx expo start:*)",
       "Bash(npx kill-port:*)",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "Bash(ping:*)",
+      "Bash(rd /s /q .next)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import AuthPageWrapper from "@/components/AuthPageWrapper";
+import Logo from "@/components/Logo";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -49,30 +50,28 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-8 shadow-2xl">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">
+    <AuthPageWrapper>
+      <div className="max-w-md mx-auto">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-8 md:p-10">
+          <div className="mb-6">
+            <Link href="/" className="inline-block mb-4 transition-transform hover:scale-105">
+              <Logo size="text-4xl" />
+            </Link>
+          </div>
+
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
               Forgot Password?
             </h1>
-            <p className="text-gray-300">
+            <p className="text-gray-600 dark:text-gray-400">
               Enter your email and we&apos;ll send you a code to reset your password
             </p>
           </div>
 
           {success ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-4"
-            >
-              <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
-                <p className="text-green-200 text-center">
+            <div className="space-y-6">
+              <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-500 rounded-xl p-4">
+                <p className="text-green-700 dark:text-green-300 text-center font-medium">
                   Reset code sent! Check your email.
                   <br />
                   Redirecting to verification page...
@@ -80,36 +79,42 @@ export default function ForgotPasswordPage() {
               </div>
 
               {devOtp && (
-                <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
-                  <p className="text-yellow-200 text-xs font-semibold mb-1">Development Mode - Your OTP:</p>
-                  <p className="text-yellow-100 text-center text-2xl font-bold tracking-widest font-mono">
-                    {devOtp}
-                  </p>
-                  <p className="text-yellow-300 text-xs mt-2 text-center">
-                    (This will only show in development mode)
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-500 rounded-xl p-4">
+                  <p className="text-yellow-800 dark:text-yellow-300 text-sm text-center">
+                    <strong>Development Mode:</strong>
+                    <br />
+                    Your OTP code: <code className="font-mono text-lg">{devOtp}</code>
                   </p>
                 </div>
               )}
-            </motion.div>
+
+              <Link
+                href="/login"
+                className="block text-center text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition font-semibold hover:underline"
+              >
+                Back to Login
+              </Link>
+            </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
-                  <p className="text-red-200 text-sm">{error}</p>
+                <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500 text-red-700 dark:text-red-400 p-4 rounded-xl" role="alert">
+                  <p className="font-medium">{error}</p>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-200 mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Email Address
                 </label>
                 <input
                   type="email"
+                  id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="your@email.com"
                   required
+                  className="block w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  placeholder="you@example.com"
                   disabled={loading}
                 />
               </div>
@@ -117,23 +122,23 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl text-lg font-semibold hover:shadow-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 active:scale-95"
               >
                 {loading ? "Sending..." : "Send Reset Code"}
               </button>
+
+              <div className="text-center">
+                <Link
+                  href="/login"
+                  className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition font-semibold hover:underline"
+                >
+                  Back to Login
+                </Link>
+              </div>
             </form>
           )}
-
-          <div className="mt-6 text-center">
-            <Link
-              href="/signin"
-              className="text-purple-300 hover:text-purple-200 text-sm transition"
-            >
-              Back to Sign In
-            </Link>
-          </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </AuthPageWrapper>
   );
 }
