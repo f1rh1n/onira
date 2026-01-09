@@ -7,6 +7,7 @@ import Image from "next/image";
 import Avatar from "@/components/Avatar";
 import GoogleAdSense from "@/components/GoogleAdSense";
 import ReviewsSection from "@/components/ReviewsSection";
+import ProfileShareButton from "@/components/ProfileShareButton";
 import { HiMapPin, HiPhone, HiGlobeAlt, HiStar, HiCheckBadge } from "react-icons/hi2";
 import { FaInstagram } from "react-icons/fa";
 
@@ -93,7 +94,7 @@ export default async function PublicProfilePage({
         )}
 
         {/* Profile Header Card */}
-        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-4 sm:p-6 -mt-20 relative z-10 mb-6 transition-all duration-300 hover:shadow-3xl hover:scale-[1.01]">
+        <div id="profile-share-card" className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-4 sm:p-6 -mt-20 relative z-10 mb-6 transition-all duration-300 hover:shadow-3xl hover:scale-[1.01]">
           <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
             {/* Profile Avatar */}
             <div className="relative -mt-16 sm:-mt-20">
@@ -213,6 +214,15 @@ export default async function PublicProfilePage({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Share to Instagram Button */}
+        <div className="mb-6 flex justify-center">
+          <ProfileShareButton
+            profileElementId="profile-share-card"
+            profileName={profile.displayName}
+            className="w-full sm:w-auto"
+          />
         </div>
 
         {/* Leave a Review Section - Collapsible Button */}
