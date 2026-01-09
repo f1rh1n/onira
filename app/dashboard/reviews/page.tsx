@@ -567,8 +567,8 @@ export default function ReviewsDashboardPage() {
                       </div>
                     </div>
 
-                    {/* Primary Action Button */}
-                    <div className="pt-4 border-t border-white/10">
+                    {/* Primary Action Buttons */}
+                    <div className="pt-4 border-t border-white/10 space-y-3">
                       <button
                         onClick={() => togglePublish(review.id, review.isPublished)}
                         className={`w-full px-6 py-3 rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 ${
@@ -583,6 +583,13 @@ export default function ReviewsDashboardPage() {
                           <><FiEye className="w-5 h-5" /> Publish Review</>
                         )}
                       </button>
+
+                      {/* Instagram Share Button - Only for Published Reviews */}
+                      {review.isPublished && (
+                        <div className="w-full">
+                          <InstagramShareButton reviewId={review.id} variant="full" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

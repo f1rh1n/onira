@@ -5,7 +5,7 @@ import { useState } from 'react';
 interface InstagramShareButtonProps {
   reviewId: string;
   className?: string;
-  variant?: 'icon' | 'full';
+  variant?: 'icon' | 'full' | 'dropdown';
 }
 
 export default function InstagramShareButton({
@@ -105,6 +105,19 @@ export default function InstagramShareButton({
       >
         <span className="text-xl group-hover:scale-110 transition">📸</span>
         <span className="text-sm">{isGenerating ? 'Sharing...' : 'Share'}</span>
+      </button>
+    );
+  }
+
+  if (variant === 'dropdown') {
+    return (
+      <button
+        onClick={handleShare}
+        disabled={isGenerating}
+        className={`w-full px-4 py-3 text-left hover:bg-purple-100 transition flex items-center gap-2 text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      >
+        <span className="text-xl">📸</span>
+        <span>{isGenerating ? 'Generating...' : 'Share to Instagram'}</span>
       </button>
     );
   }
