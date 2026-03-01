@@ -64,21 +64,47 @@ jobs:
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
-          ssh ${EC2_USER}@${EC2_HOST} <<'EOF'
+          ssh ${EC2_USER}@${EC2_HOST} << 'EOF'
             set -e
-            APP_DIR=/home/ec2-user/bakery   # change if your compose file lives elsewhere
-            cd "$APP_DIR"
 
-            # overwrite the compose .env so substitutions use the new secrets
-            cat > .env <<'ENVVARS'
-          DATABASE_URL=${DATABASE_URL}
-          NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-          NEXTAUTH_URL=${NEXTAUTH_URL}
-          RESEND_API_KEY=${RESEND_API_KEY}
-          ENVVARS
+            echo "===== ONIRA DEPLOY START ====="
+            cd /home/ec2-user
 
+            echo "Checking disk space..."
+            df -h
+
+            echo "Cleaning up Docker resources..."
+            docker container prune -f || true
+            docker image prune -a -f || true
+            docker volume prune -f || true
+            docker builder prune -a -f || true
+
+            echo "Disk space after cleanup:"
+            df -h
+
+            echo "Logging into GHCR..."
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+            echo "Pulling latest image..."
             docker pull ghcr.io/f1rh1n/onira:latest
-            docker compose down || true
-            docker compose up -d
+
+            echo "Starting app with docker-compose..."
+            docker-compose up -d
+
+            echo "Running containers:"
+            docker ps
+
+            echo "Health check (container)..."
+            for i in {1..10}; do
+              if curl -fs http://localhost:3000/api/health > /dev/null; then
+                echo "✓ App is healthy"
+                exit 0
+              fi
+              echo "Waiting for app..."
+              sleep 3
+            done
+
+            echo "❌ Health check failed"
+            docker logs onira --tail 50
+            exit 1
           EOF
